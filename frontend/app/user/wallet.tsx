@@ -15,14 +15,16 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { API_BASE_URL, saveLocalBalance, getLocalBalance, syncOfflineTransactions, refundExpiredVouchers } from "../../lib/api";
 import { ensureUserKeypairAndId } from "../../lib/cryptoKeys";
 import { registerPublicKeyIfNeeded } from "../../lib/registerKey";
+import { initiateTopUp } from "../../lib/razorpay";
 
-const MAX_ADD_AMOUNT = 1000;
+const MAX_SINGLE_AMOUNT = 1000;   // per transaction
+const MAX_WALLET_BALANCE = 5000;  // total wallet cap
 
 const QUICK_ACTIONS = [
   {
@@ -60,6 +62,24 @@ const QUICK_ACTIONS = [
     iconColor: "#f29b3a",
     iconBg: "#fff0df",
     route: "/user/profile",
+  },
+  {
+    key: "insights",
+    title: "Insights",
+    subtitle: "AI Spending Report",
+    icon: "sparkles-outline" as const,
+    iconColor: "#8b5cf6",
+    iconBg: "#f2e8ff",
+    route: "/user/insights",
+  },
+  {
+    key: "support",
+    title: "AI Support",
+    subtitle: "Payment Help Chat",
+    icon: "chatbubbles-outline" as const,
+    iconColor: "#14b8a6",
+    iconBg: "#dff9f6",
+    route: "/user/support",
   },
 ];
 
@@ -168,38 +188,51 @@ export default function UserWalletScreen() {
     setRefreshing(false);
   }, [loadBalance, loadRecentTxns]);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
   useFocusEffect(useCallback(() => { loadAll(); }, [loadAll]));
 
   const handleAddBalance = async () => {
     const amt = Number(addAmount);
     if (isNaN(amt) || amt <= 0) { setError("Please enter a valid amount"); return; }
-    if (amt > MAX_ADD_AMOUNT) { setError(`Maximum amount is ₹${MAX_ADD_AMOUNT}`); return; }
+    if (amt > MAX_SINGLE_AMOUNT) { setError(`Max ₹${MAX_SINGLE_AMOUNT} per transaction`); return; }
+
+    // Wallet total cap check
+    const currentBal = balance ?? 0;
+    if (currentBal >= MAX_WALLET_BALANCE) {
+      setError(`Wallet full. Max limit is ₹${MAX_WALLET_BALANCE.toLocaleString("en-IN")}`);
+      return;
+    }
+    if (currentBal + amt > MAX_WALLET_BALANCE) {
+      const canAdd = MAX_WALLET_BALANCE - currentBal;
+      setError(`You can only add ₹${canAdd.toLocaleString("en-IN")} more (₹${MAX_WALLET_BALANCE.toLocaleString("en-IN")} wallet limit)`);
+      return;
+    }
+
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("@auth_token");
       if (!token) { Alert.alert("Error", "Please login first"); return; }
-      const response = await fetch(`${API_BASE_URL}/api/balance/add`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amt }),
+
+      // Close modal before opening Razorpay browser
+      setShowAddModal(false);
+      setAddAmount("");
+      setError(null);
+
+      // Open Razorpay checkout in browser — balance auto-updated on return
+      const result = await initiateTopUp(token, amt, (newBal) => {
+        setBalance(newBal);
+        saveLocalBalance(newBal).catch(() => {});
       });
-      const data = await response.json();
-      if (response.ok) {
-        setBalance(data.balance);
-        setIsOffline(false);
-        // Update local cache with new balance
-        await saveLocalBalance(data.balance);
-        setAddAmount("");
-        setError(null);
-        setShowAddModal(false);
+
+      Alert.alert(
+        result.success ? "✅ Payment" : "❌ Payment",
+        result.message
+      );
+
+      if (result.success) {
         await loadRecentTxns();
-        Alert.alert("Success ✅", `₹${amt} added!\nNew balance: ₹${data.balance}`, [{ text: "OK" }]);
-      } else {
-        setError(data.error || "Failed to add balance");
       }
     } catch {
-      setError("No internet connection. Please try again when online.");
+      Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -223,7 +256,7 @@ export default function UserWalletScreen() {
 
   const firstLetter = userName.charAt(0).toUpperCase();
 
-  const handleQuickAction = (key: string, route: string) => {
+  const handleQuickAction = (key: string, route: Href) => {
     if (key === "add") {
       setAddAmount("");
       setError(null);
@@ -360,7 +393,7 @@ export default function UserWalletScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Add Money to Wallet</Text>
-            <Text style={styles.modalSub}>Maximum ₹{MAX_ADD_AMOUNT} per transaction</Text>
+            <Text style={styles.modalSub}>Per transaction: ₹{MAX_SINGLE_AMOUNT} max • Wallet limit: ₹{MAX_WALLET_BALANCE.toLocaleString("en-IN")}</Text>
 
             <View style={styles.amountRow}>
               <Text style={styles.rupeeSym}>₹</Text>

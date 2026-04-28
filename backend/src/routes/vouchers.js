@@ -2,6 +2,7 @@ import express from "express";
 import { getDB } from "../db/index.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { verifyECDSA } from "../utils/crypto.js";
+import { triggerMerchantPayout } from "./payments.js";
 
 const router = express.Router();
 
@@ -111,12 +112,27 @@ router.post("/vouchers/sync", async (req, res) => {
 				...payload,
 				signature: v.signature,
 				merchantId,
+				merchantName: v.merchantName || null,
 				expiresAt: v.expiresAt || null,
 				status: "synced",
 				syncedAt: new Date().toISOString(),
 			});
 
 			syncedIds.push(v.voucherId);
+
+			// 💸 AUTO PAYOUT AGENT — fire and forget (non-blocking)
+			// In test mode: Razorpay accepts call but no real money moves
+			// In live mode: merchant's UPI receives money within seconds
+			triggerMerchantPayout(merchantId, v.amount, v.voucherId)
+				.then((result) => {
+					if (result.success) {
+						console.log(`💸 Auto-payout triggered: ₹${v.amount} → merchant ${merchantId}`);
+					} else {
+						console.log(`⚠️  Payout skipped for ${merchantId}: ${result.reason}`);
+					}
+				})
+				.catch((err) => console.error("Payout agent error:", err));
+
 		}
 
 		const totalStored = await vouchersCollection.countDocuments();

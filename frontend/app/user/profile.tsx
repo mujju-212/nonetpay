@@ -97,7 +97,7 @@ export default function ProfileScreen() {
     setIsEditing(false);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       "Logout",
       "Are you sure you want to logout?",
@@ -106,14 +106,20 @@ export default function ProfileScreen() {
         {
           text: "Logout",
           style: "destructive",
-          onPress: async () => {
-            await AsyncStorage.multiRemove([
+          onPress: () => {
+            // Clear all session & cache data, but keep crypto keys
+            // (keys are device-level; user should have same keys on re-login)
+            AsyncStorage.multiRemove([
               "@auth_token",
               "@user_data",
-              "@user_keypair",
-              "@user_id",
-            ]);
-            router.replace("/");
+              "@walletBalance",
+              "@offlineTransactions",
+              "@usedVoucherIds",
+              "@generatedVouchers",
+            ]).catch(() => {}).finally(() => {
+              // Navigate outside the async chain for reliability
+              router.replace("/");
+            });
           },
         },
       ]

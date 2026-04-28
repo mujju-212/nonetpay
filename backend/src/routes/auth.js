@@ -91,7 +91,7 @@ router.post("/auth/login", async (req, res) => {
 
 router.post("/auth/merchant/register", async (req, res) => {
 	try {
-		const { phone, password, businessName, address } = req.body || {};
+		const { phone, password, businessName, address, upiId } = req.body || {};
 		if (!phone || !password || !businessName) {
 			return res.status(400).json({ error: "Phone, password, and business name are required" });
 		}
@@ -114,6 +114,7 @@ router.post("/auth/merchant/register", async (req, res) => {
 			phone,
 			businessName,
 			address: address || "",
+			upiId: upiId || null,        // ← used by payout agent
 			passwordHash,
 			isVerified: false,
 			createdAt: new Date().toISOString(),

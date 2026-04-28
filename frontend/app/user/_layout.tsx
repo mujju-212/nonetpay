@@ -7,8 +7,10 @@ export default function UserLayout() {
       <Stack.Screen name="wallet" />
       <Stack.Screen name="pay" />
       <Stack.Screen name="history" />
+      <Stack.Screen name="insights" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="settings" />
+      <Stack.Screen name="support" />
     </Stack>
   );
 }

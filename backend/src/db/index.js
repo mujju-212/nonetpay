@@ -14,21 +14,34 @@ export async function connectDB() {
 		console.log("Connecting to MongoDB...");
 		await client.connect();
 		db = client.db(dbName);
-		console.log(`Connected to MongoDB database: ${dbName}`);
-
-		await db.collection("users").createIndex({ userId: 1 }, { unique: true });
-		await db.collection("users").createIndex({ phone: 1 }, { unique: true, sparse: true });
-		await db.collection("merchants").createIndex({ merchantId: 1 }, { unique: true });
-		await db.collection("merchants").createIndex({ phone: 1 }, { unique: true, sparse: true });
-		await db.collection("vouchers").createIndex({ voucherId: 1 }, { unique: true });
-		await db.collection("vouchers").createIndex({ issuedTo: 1 });
-		await db.collection("vouchers").createIndex({ merchantId: 1 });
-
-		console.log("Database indexes created");
+		console.log(`✅ Connected to MongoDB database: ${dbName}`);
+		await createIndexesSafely();
 	} catch (error) {
-		console.error("MongoDB connection error:", error);
+		console.error("❌ MongoDB connection error:", error);
 		process.exit(1);
 	}
+}
+
+async function createIndexesSafely() {
+	const indexes = [
+		{ col: "users",     spec: { userId: 1 },     opts: { unique: true } },
+		{ col: "users",     spec: { phone: 1 },      opts: { unique: true, sparse: true } },
+		{ col: "merchants", spec: { merchantId: 1 }, opts: { unique: true } },
+		{ col: "merchants", spec: { phone: 1 },      opts: { unique: true, sparse: true } },
+		{ col: "vouchers",  spec: { voucherId: 1 },  opts: { unique: true } },
+		{ col: "vouchers",  spec: { issuedTo: 1 },   opts: {} },
+		{ col: "vouchers",  spec: { merchantId: 1 }, opts: {} },
+	];
+
+	for (const { col, spec, opts } of indexes) {
+		try {
+			await db.collection(col).createIndex(spec, opts);
+		} catch (err) {
+			// Index conflict from existing data — log and continue, don't crash
+			console.warn(`⚠️  Index warning on '${col}': ${err.message}`);
+		}
+	}
+	console.log("✅ Database indexes ready");
 }
 
 export function getDB() {
