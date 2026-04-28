@@ -168,7 +168,6 @@ export default function UserWalletScreen() {
     setRefreshing(false);
   }, [loadBalance, loadRecentTxns]);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
   useFocusEffect(useCallback(() => { loadAll(); }, [loadAll]));
 
   const handleAddBalance = async () => {

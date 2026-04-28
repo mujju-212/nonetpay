@@ -137,6 +137,9 @@ export default function UserPayScreen() {
       console.log("Invalid merchant QR", e);
       setMerchant(null);
       setError("Could not read merchant QR");
+      setTimeout(() => {
+        setIsScanning(true);
+      }, 800);
     }
   };
 
