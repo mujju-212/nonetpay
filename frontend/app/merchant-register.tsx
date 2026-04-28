@@ -44,21 +44,13 @@ export default function MerchantRegisterScreen() {
     }
 
     setLoading(true);
-    console.log('Registering merchant with API:', API_BASE_URL);
-    
     try {
-      console.log('Sending request to:', `${API_BASE_URL}/api/auth/merchant/register`);
-      console.log('Data:', { phone, businessName, address: address || 'none' });
-      
       const response = await fetch(`${API_BASE_URL}/api/auth/merchant/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, password, businessName, address }),
       });
-
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (!response.ok) {
         if (response.status === 400 && data.error?.includes('already exists')) {

@@ -42,19 +42,15 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    console.log('Registering user with API:', API_BASE_URL);
     
     try {
-      console.log('Sending request to:', `${API_BASE_URL}/api/auth/register`);
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, password }),
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (!response.ok) {
         if (response.status === 400 && data.error?.includes('already exists')) {
