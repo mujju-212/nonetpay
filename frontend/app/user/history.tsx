@@ -71,7 +71,9 @@ export default function UserHistoryScreen() {
       try { await syncOfflineTransactions(token); } catch { /* offline, skip */ }
 
       // ── Count remaining pending after sync ──────────────────────────────
-      const allTxns = await getOfflineTransactions();      // Only "pending" ones need syncing (failed = server rejected, synced = done)      setPendingCount(allTxns.filter((t) => t.status === "pending").length);
+      const allTxns = await getOfflineTransactions();
+      // Only "pending" ones need syncing (failed = server rejected, synced = done)
+      setPendingCount(allTxns.filter((t) => t.status === "pending").length);
 
       // ── Load all generated vouchers ────────────────────────────────────────
       const allVouchers = await getGeneratedVouchers();

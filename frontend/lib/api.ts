@@ -212,6 +212,7 @@ export async function syncOfflineTransactions(token: string): Promise<number> {
   }
 
   let syncedCount = 0;
+  let didUpdate = false;
   for (const [merchantId, txns] of Object.entries(byMerchant)) {
     try {
       const vouchers = txns.map((t) => ({
@@ -253,6 +254,7 @@ export async function syncOfflineTransactions(token: string): Promise<number> {
         for (const txn of txns) {
           if (syncedNow.has(txn.voucherId) || alreadySynced.has(txn.voucherId)) {
             txn.status = "synced";
+            didUpdate = true;
             syncedCount++;
 
             // ── Explicitly deduct from backend balance via authenticated endpoint ──
@@ -291,6 +293,7 @@ export async function syncOfflineTransactions(token: string): Promise<number> {
             // insufficient balance, etc.). It will never sync — mark failed so it
             // leaves the pending queue and stops blocking the banner.
             txn.status = "failed";
+            didUpdate = true;
           }
         }
       }
@@ -299,7 +302,7 @@ export async function syncOfflineTransactions(token: string): Promise<number> {
     }
   }
 
-  if (syncedCount > 0) {
+  if (didUpdate) {
     await AsyncStorage.setItem(STORAGE_KEYS.OFFLINE_TRANSACTIONS, JSON.stringify(list));
   }
   return syncedCount;
