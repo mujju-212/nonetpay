@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function MerchantProfileScreen() {
   const router = useRouter();
@@ -165,14 +166,14 @@ export default function MerchantProfileScreen() {
           onPress={() => router.back()}
           style={({ pressed }) => [styles.backButton, pressed && styles.backButtonPressed]}
         >
-          <Text style={styles.backArrow}>‹</Text>
+          <Ionicons name="chevron-back" size={24} color="#1f2937" />
         </Pressable>
         <Text style={styles.title}>Merchant Profile</Text>
         <Pressable
           onPress={() => router.push("/merchant/settings")}
           style={({ pressed }) => [styles.settingsBtn, pressed && { opacity: 0.6 }]}
         >
-          <Text style={styles.settingsIcon}>⚙️</Text>
+          <Ionicons name="settings-outline" size={20} color="#1f2937" />
         </Pressable>
       </View>
 
@@ -188,7 +189,10 @@ export default function MerchantProfileScreen() {
           <Text style={styles.avatarName}>{shopName || "Merchant"}</Text>
           <Text style={styles.avatarId}>ID: {merchantId || "—"}</Text>
           <View style={styles.merchantBadge}>
-            <Text style={styles.merchantBadgeText}>🏪 Merchant Account</Text>
+            <View style={styles.inlineIconText}>
+              <Ionicons name="storefront-outline" size={14} color="#10b981" />
+              <Text style={styles.merchantBadgeText}>Merchant Account</Text>
+            </View>
           </View>
         </View>
 
@@ -209,7 +213,10 @@ export default function MerchantProfileScreen() {
               <View style={styles.valueRow}>
                 <Text style={styles.value}>{shopName || "Not set"}</Text>
                 <Pressable style={styles.editPill} onPress={() => setIsEditing(true)}>
-                  <Text style={styles.editPillText}>✏️ Edit</Text>
+                  <View style={styles.inlineIconText}>
+                    <Ionicons name="create-outline" size={13} color="#10b981" />
+                    <Text style={styles.editPillText}>Edit</Text>
+                  </View>
                 </Pressable>
               </View>
             )}
@@ -283,7 +290,10 @@ export default function MerchantProfileScreen() {
 
         {/* ── SECURITY CARD ── */}
         <View style={styles.securityCard}>
-          <Text style={styles.securityTitle}>🔐 Account Security</Text>
+          <View style={styles.securityTitleRow}>
+            <Ionicons name="shield-checkmark-outline" size={16} color="#1f2937" />
+            <Text style={styles.securityTitle}>Account Security</Text>
+          </View>
           <View style={styles.securityRow}>
             <Text style={styles.securityLabel}>Wallet Type</Text>
             <View style={styles.securityBadge}><Text style={styles.securityBadgeText}>Offline</Text></View>
@@ -299,7 +309,10 @@ export default function MerchantProfileScreen() {
           style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutPressed]}
           onPress={handleLogout}
         >
-          <Text style={styles.logoutText}>🚪 Logout</Text>
+          <View style={styles.inlineIconText}>
+            <Ionicons name="log-out-outline" size={18} color="#ef4444" />
+            <Text style={styles.logoutText}>Logout</Text>
+          </View>
         </Pressable>
 
         <View style={{ height: 40 }} />
@@ -368,6 +381,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   merchantBadgeText: { color: "#10b981", fontWeight: "700", fontSize: 13 },
+  inlineIconText: { flexDirection: "row", alignItems: "center", gap: 6 },
 
   fieldsCard: {
     backgroundColor: "#fff",
@@ -423,7 +437,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  securityTitle: { fontSize: 14, fontWeight: "700", color: "#1f2937", marginBottom: 12 },
+  securityTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12 },
+  securityTitle: { fontSize: 14, fontWeight: "700", color: "#1f2937" },
   securityRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   securityLabel: { fontSize: 13, color: "#6b7280", fontWeight: "500" },
   securityBadge: { backgroundColor: "#f3f4f6", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },

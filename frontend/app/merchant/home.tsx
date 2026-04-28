@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function MerchantHomeScreen() {
   const router = useRouter();
@@ -114,7 +115,8 @@ export default function MerchantHomeScreen() {
         {/* QR Card */}
         <View style={styles.qrCard}>
           <View style={styles.qrHeader}>
-            <Text style={styles.qrLabel}>📋 Your Payment QR Code</Text>
+            <Ionicons name="qr-code-outline" size={18} color="#1f2937" />
+            <Text style={styles.qrLabel}>Your Payment QR Code</Text>
           </View>
           <Text style={styles.qrSub}>Show this to customers to receive payments</Text>
           <View style={styles.qrBox}>
@@ -130,10 +132,18 @@ export default function MerchantHomeScreen() {
         {pendingCount > 0 && (
           <Pressable style={styles.syncAlert} onPress={() => router.push("/merchant/history")}>
             <Text style={styles.syncAlertText}>
-              ⚠️  {pendingCount} voucher{pendingCount !== 1 ? "s" : ""} waiting to sync → Tap to go to History
+              {pendingCount} voucher{pendingCount !== 1 ? "s" : ""} waiting to sync. Tap to open History.
             </Text>
           </Pressable>
         )}
+        <Pressable style={styles.syncNowBtn} onPress={() => router.push("/merchant/history")}>
+          <Ionicons name="sync-outline" size={16} color="#fff" />
+          <Text style={styles.syncNowBtnText}>
+            {pendingCount > 0
+              ? `Sync ${pendingCount} Pending Voucher${pendingCount !== 1 ? "s" : ""}`
+              : "Open Sync Screen"}
+          </Text>
+        </Pressable>
 
         {/* Quick Actions */}
         <Text style={styles.sectionHeading}>Quick Actions</Text>
@@ -142,7 +152,7 @@ export default function MerchantHomeScreen() {
             style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
             onPress={() => router.push("/merchant/receive")}
           >
-            <Text style={styles.actionEmoji}>💰</Text>
+            <Ionicons name="scan-outline" size={28} color="#10b981" style={styles.actionIcon} />
             <Text style={styles.actionTitle}>Receive Payment</Text>
             <Text style={styles.actionSub}>Scan customer QR voucher</Text>
           </Pressable>
@@ -151,7 +161,7 @@ export default function MerchantHomeScreen() {
             style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
             onPress={() => router.push("/merchant/history")}
           >
-            <Text style={styles.actionEmoji}>📋</Text>
+            <Ionicons name="receipt-outline" size={28} color="#7c3aed" style={styles.actionIcon} />
             <Text style={styles.actionTitle}>Transaction History</Text>
             <Text style={styles.actionSub}>View sales & sync to server</Text>
           </Pressable>
@@ -163,13 +173,19 @@ export default function MerchantHomeScreen() {
             style={({ pressed }) => [styles.outlineBtn, styles.profileBtn, pressed && styles.btnPressed]}
             onPress={() => router.push("/merchant/profile")}
           >
-            <Text style={styles.profileBtnText}>👤 My Profile</Text>
+            <View style={styles.btnContent}>
+              <Ionicons name="person-circle-outline" size={16} color="#7c7ca8" />
+              <Text style={styles.profileBtnText}>My Profile</Text>
+            </View>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.outlineBtn, styles.logoutBtn, pressed && styles.btnPressed]}
             onPress={handleLogout}
           >
-            <Text style={styles.logoutBtnText}>🚪 Log Out</Text>
+            <View style={styles.btnContent}>
+              <Ionicons name="log-out-outline" size={16} color="#f97316" />
+              <Text style={styles.logoutBtnText}>Log Out</Text>
+            </View>
           </Pressable>
         </View>
 
@@ -216,7 +232,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8, 
     elevation: 3,
   },
-  qrHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
+  qrHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4, gap: 6 },
   qrLabel: { fontSize: 16, fontWeight: "700", color: "#1f2937" },
   qrSub: { fontSize: 12, color: "#9ca3af", marginBottom: 16, textAlign: "center" },
   qrBox: {
@@ -243,6 +259,18 @@ const styles = StyleSheet.create({
 
   syncAlert: { backgroundColor: "#fef3c7", borderRadius: 12, padding: 14, marginBottom: 14, borderLeftWidth: 4, borderLeftColor: "#f59e0b" },
   syncAlertText: { fontSize: 13, color: "#92400e", fontWeight: "600", lineHeight: 20 },
+  syncNowBtn: {
+    backgroundColor: "#2563eb",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  syncNowBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 
   sectionHeading: { fontSize: 16, fontWeight: "700", color: "#1f2937", marginBottom: 12 },
   actionsGrid: { flexDirection: "row", gap: 12, marginBottom: 18 },
@@ -259,7 +287,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardPressed: { opacity: 0.75, transform: [{ scale: 0.95 }] },
-  actionEmoji: { fontSize: 32, marginBottom: 10 },
+  actionIcon: { marginBottom: 10 },
   actionTitle: { fontSize: 13, fontWeight: "700", color: "#1f2937", textAlign: "center", marginBottom: 6 },
   actionSub: { fontSize: 11, color: "#9ca3af", textAlign: "center" },
 
@@ -276,6 +304,7 @@ const styles = StyleSheet.create({
   profileBtnText: { color: "#7c7ca8", fontSize: 14, fontWeight: "600" },
   logoutBtn: { borderColor: "#fca5a5" },
   logoutBtnText: { color: "#f97316", fontSize: 14, fontWeight: "700" },
+  btnContent: { flexDirection: "row", alignItems: "center", gap: 6 },
   btnPressed: { opacity: 0.7 },
   outlineBtnText: { color: "#fff", fontSize: 14, fontWeight: "600" },
 });

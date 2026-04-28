@@ -28,6 +28,7 @@ import {
   isVoucherExpired,
 } from "../../lib/api";
 import TransactionDetailModal from "../../components/TransactionDetailModal";
+import { Ionicons } from "@expo/vector-icons";
 
 type Transaction = {
   id: string;
@@ -371,7 +372,7 @@ export default function UserHistoryScreen() {
                 {(v as any).expired ? "↩ Refunded" : v.used ? "✅ Used" : "⏳ Pending"}
               </Text>
             </View>
-            <Text style={styles.expandArrow}>{isExpanded ? "▲" : "▼"}</Text>
+            <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color="#6b7280" />
           </View>
         </Pressable>
 
@@ -387,7 +388,7 @@ export default function UserHistoryScreen() {
             </View>
             {!v.used && (
               <Text style={styles.qrHint}>
-                📲 Show this QR code to the merchant to complete payment
+                Show this QR code to the merchant to complete payment
               </Text>
             )}
 
@@ -400,7 +401,12 @@ export default function UserHistoryScreen() {
               >
                 {pdfLoadingVoucher === v.voucherId
                   ? <ActivityIndicator size="small" color="#fff" />
-                  : <Text style={styles.voucherActionBtnText}>📥 Download PDF</Text>
+                  : (
+                    <View style={styles.voucherBtnContent}>
+                      <Ionicons name="download-outline" size={14} color="#fff" />
+                      <Text style={styles.voucherActionBtnText}>Download PDF</Text>
+                    </View>
+                  )
                 }
               </Pressable>
               <Pressable
@@ -410,7 +416,12 @@ export default function UserHistoryScreen() {
               >
                 {shareLoadingVoucher === v.voucherId
                   ? <ActivityIndicator size="small" color="#fff" />
-                  : <Text style={styles.voucherActionBtnText}>📤 Share</Text>
+                  : (
+                    <View style={styles.voucherBtnContent}>
+                      <Ionicons name="share-social-outline" size={14} color="#fff" />
+                      <Text style={styles.voucherActionBtnText}>Share</Text>
+                    </View>
+                  )
                 }
               </Pressable>
             </View>
@@ -500,7 +511,7 @@ export default function UserHistoryScreen() {
           style={({ pressed }) => [styles.backButton, pressed && styles.backButtonPressed]}
         >
           <View style={styles.backBtnInner}>
-            <Text style={styles.backArrow}>←</Text>
+            <Ionicons name="chevron-back" size={20} color="#1f2433" />
           </View>
         </Pressable>
         <View style={styles.headerCenter}>
@@ -522,22 +533,34 @@ export default function UserHistoryScreen() {
           style={[styles.tab, activeTab === "transactions" && styles.tabActive]}
           onPress={() => setActiveTab("transactions")}
         >
-          <Text style={[styles.tabText, activeTab === "transactions" && styles.tabTextActive]}>
-            📋 Transactions
-          </Text>
+          <View style={styles.tabTextRow}>
+            <Ionicons
+              name="list-outline"
+              size={14}
+              color={activeTab === "transactions" ? "#6f63ff" : "#6b7280"}
+            />
+            <Text style={[styles.tabText, activeTab === "transactions" && styles.tabTextActive]}>
+              Transactions
+            </Text>
+          </View>
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === "vouchers" && styles.tabActive]}
           onPress={() => setActiveTab("vouchers")}
         >
-          <Text style={[styles.tabText, activeTab === "vouchers" && styles.tabTextActive]}>
-            🎫 Vouchers
+          <View style={styles.tabTextRow}>
+            <Ionicons
+              name="ticket-outline"
+              size={14}
+              color={activeTab === "vouchers" ? "#6f63ff" : "#6b7280"}
+            />
+            <Text style={[styles.tabText, activeTab === "vouchers" && styles.tabTextActive]}>
+              Vouchers
+            </Text>
             {vouchers.filter((v) => !v.used).length > 0 && (
-              <Text style={styles.tabBadge}>
-                {" "}{vouchers.filter((v) => !v.used).length}
-              </Text>
+              <Text style={styles.tabBadge}>{vouchers.filter((v) => !v.used).length}</Text>
             )}
-          </Text>
+          </View>
         </Pressable>
       </View>
 
@@ -545,7 +568,7 @@ export default function UserHistoryScreen() {
       {pendingCount > 0 && (
         <View style={styles.syncBanner}>
           <View style={styles.syncBannerLeft}>
-            <Text style={styles.syncBannerIcon}>⏳</Text>
+            <Ionicons name="time-outline" size={16} color="#92400e" />
             <Text style={styles.syncBannerText}>
               {pendingCount} payment{pendingCount > 1 ? "s" : ""} pending sync
             </Text>
@@ -730,6 +753,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+  tabTextRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   tabActive: { backgroundColor: "#fff" },
   tabText: { fontSize: 14, fontWeight: "600", color: "#8b8fa6" },
   tabTextActive: { color: "#6f63ff" },
@@ -927,6 +951,7 @@ const styles = StyleSheet.create({
   voucherShareBtn: { backgroundColor: "#22c55e" },
   voucherBtnDisabled: { opacity: 0.6 },
   voucherActionBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  voucherBtnContent: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
   // ── Sync banner ──
   syncBanner: {
     flexDirection: "row",

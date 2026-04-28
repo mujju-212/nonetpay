@@ -15,6 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -152,7 +153,7 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.backButton, pressed && styles.backButtonPressed]}
         >
           <View style={styles.backBtnInner}>
-            <Text style={styles.backArrow}>←</Text>
+            <Ionicons name="chevron-back" size={20} color="#1f2433" />
           </View>
         </Pressable>
         <Text style={styles.title}>My Profile</Text>
@@ -160,7 +161,7 @@ export default function ProfileScreen() {
           onPress={() => router.push("/user/settings")}
           style={({ pressed }) => [styles.settingsBtn, pressed && { opacity: 0.6 }]}
         >
-          <Text style={styles.settingsIcon}>⚙️</Text>
+          <Ionicons name="settings-outline" size={20} color="#1f2433" />
         </Pressable>
       </View>
 
@@ -196,7 +197,10 @@ export default function ProfileScreen() {
               <View style={styles.valueRow}>
                 <Text style={styles.value}>{name || "Not set"}</Text>
                 <Pressable style={styles.editPill} onPress={() => setIsEditing(true)}>
-                  <Text style={styles.editPillText}>✏️ Edit</Text>
+                  <View style={styles.iconTextRow}>
+                    <Ionicons name="create-outline" size={14} color="#6f63ff" />
+                    <Text style={styles.editPillText}>Edit</Text>
+                  </View>
                 </Pressable>
               </View>
             )}
@@ -234,7 +238,10 @@ export default function ProfileScreen() {
 
         {/* ── SECURITY CARD ── */}
         <View style={styles.securityCard}>
-          <Text style={styles.securityTitle}>🔐 Security</Text>
+          <View style={styles.iconTextRow}>
+            <Ionicons name="shield-checkmark-outline" size={16} color="#111827" />
+            <Text style={styles.securityTitle}>Security</Text>
+          </View>
           <View style={styles.securityRow}>
             <Text style={styles.securityLabel}>Crypto Keys</Text>
             <View style={styles.securityBadge}><Text style={styles.securityBadgeText}>✓ Generated</Text></View>
@@ -254,7 +261,10 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutPressed]}
           onPress={handleLogout}
         >
-          <Text style={styles.logoutText}>🚪 Logout</Text>
+          <View style={styles.iconTextRow}>
+            <Ionicons name="log-out-outline" size={18} color="#dc2626" />
+            <Text style={styles.logoutText}>Logout</Text>
+          </View>
         </Pressable>
 
         <View style={{ height: 40 }} />
@@ -427,6 +437,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   editPillText: { color: "#6f63ff", fontSize: 13, fontWeight: "600" },
+  iconTextRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   hint: {
     fontSize: 11,
     color: "#9ca3af",

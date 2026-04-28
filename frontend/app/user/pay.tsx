@@ -17,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { getUserId, signPayloadHex, ensureUserKeypairAndId, getPublicKeyHex } from "../../lib/cryptoKeys";
 import { API_BASE_URL, saveLocalBalance, getLocalBalance, deductLocalBalance, queueOfflineTransaction, saveGeneratedVoucher, getGeneratedVouchers, syncOfflineTransactions, GeneratedVoucher, VOUCHER_EXPIRY_DAYS, isVoucherExpired, refundExpiredVouchers } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 type MerchantInfo = {
   merchantId: string;
@@ -288,10 +289,10 @@ export default function UserPayScreen() {
 
       <View style={styles.header}>
         <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="chevron-back" size={20} color="#1f2433" />
         </Pressable>
         <View style={styles.headerTitleRow}>
-          <Text style={styles.headerIcon}>💳</Text>
+          <Ionicons name="card-outline" size={20} color="#1f2433" />
           <Text style={styles.headerTitle}>Pay Merchant</Text>
         </View>
         <View style={styles.headerSpacer} />
@@ -311,14 +312,14 @@ export default function UserPayScreen() {
             <Text style={styles.balanceAmount}>₹{balance ?? 0}</Text>
           )}
           {isOffline && (
-            <Text style={styles.offlineBadge}>📵 Offline — cached balance</Text>
+            <Text style={styles.offlineBadge}>Offline — cached balance</Text>
           )}
         </View>
 
         {/* ── UNUSED VOUCHERS — generated but not yet shown to merchant ── */}
         {!merchant && !voucher && !showingVoucher && unusedVouchers.length > 0 && (
           <View style={styles.stepCard}>
-            <Text style={styles.unusedTitle}>🎫 Unused Vouchers</Text>
+            <Text style={styles.unusedTitle}>Unused Vouchers</Text>
             <Text style={styles.unusedSub}>
               These were generated but the merchant hasn't scanned them yet. Tap to show the QR again.
             </Text>
@@ -354,7 +355,7 @@ export default function UserPayScreen() {
                     {expiryDate && !expired && (
                       <View style={[styles.expiryBadge, daysLeft !== null && daysLeft <= 1 && styles.expiryBadgeUrgent]}>
                         <Text style={[styles.expiryBadgeText, daysLeft !== null && daysLeft <= 1 && styles.expiryBadgeTextUrgent]}>
-                          ⏳ Expires {expiryDate}
+                          Expires {expiryDate}
                           {daysLeft === 0 ? ' (today!)' : daysLeft === 1 ? ' (tomorrow)' : ` (${daysLeft}d left)`}
                         </Text>
                       </View>
@@ -376,12 +377,14 @@ export default function UserPayScreen() {
         {showingVoucher && !voucher && (
           <View style={styles.stepCard}>
             <View style={styles.stepHeader}>
-              <Text style={styles.stepNumber}>📲</Text>
+              <View style={styles.stepIconCircle}>
+                <Ionicons name="qr-code-outline" size={16} color="#ffffff" />
+              </View>
               <Text style={styles.stepTitle}>Show to Merchant</Text>
             </View>
             <View style={[styles.successBadge, { backgroundColor: '#fff3cd', borderColor: '#ffc107' }]}>
               <Text style={[styles.successText, { color: '#856404' }]}>
-                ⚠️ Pending — merchant hasn't scanned this yet
+                Pending — merchant hasn't scanned this yet
               </Text>
             </View>
             <View style={styles.qrContainer}>
@@ -419,7 +422,10 @@ export default function UserPayScreen() {
               )}
             </View>
             <Pressable style={styles.secondaryButton} onPress={() => setShowingVoucher(null)}>
-              <Text style={styles.secondaryButtonText}>← Back</Text>
+              <View style={styles.iconTextRow}>
+                <Ionicons name="chevron-back" size={16} color="#4f46e5" />
+                <Text style={styles.secondaryButtonText}>Back</Text>
+              </View>
             </Pressable>
           </View>
         )}
@@ -436,7 +442,7 @@ export default function UserPayScreen() {
               <Text style={styles.permissionText}>Requesting camera permission...</Text>
             ) : !permission.granted ? (
               <View style={styles.permissionContainer}>
-                <Text style={styles.permissionText}>📷 Camera access needed</Text>
+                <Text style={styles.permissionText}>Camera access needed</Text>
                 <Pressable style={styles.primaryButton} onPress={requestPermission}>
                   <Text style={styles.primaryButtonText}>Grant Permission</Text>
                 </Pressable>
@@ -458,7 +464,7 @@ export default function UserPayScreen() {
                   </CameraView>
                 </View>
                 <Text style={styles.scanInstructions}>
-                  🎯 Point camera at merchant's QR code
+                  Point camera at merchant QR code
                 </Text>
               </View>
             )}
@@ -474,7 +480,7 @@ export default function UserPayScreen() {
             </View>
             
             <View style={styles.merchantInfo}>
-              <Text style={styles.merchantLabel}>🏪 Merchant</Text>
+              <Text style={styles.merchantLabel}>Merchant</Text>
               <Text style={styles.merchantName}>{merchant.name || 'Business'}</Text>
               <Text style={styles.merchantId}>ID: {merchant.merchantId}</Text>
             </View>
@@ -493,7 +499,7 @@ export default function UserPayScreen() {
 
             {error && (
               <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>⚠️ {error}</Text>
+                <Text style={styles.errorText}>{error}</Text>
               </View>
             )}
 
@@ -505,11 +511,14 @@ export default function UserPayScreen() {
               disabled={!amount}
               onPress={handleGenerateVoucher}
             >
-              <Text style={styles.primaryButtonText}>💳 Generate Payment Voucher</Text>
+              <View style={styles.iconTextRow}>
+                <Ionicons name="card-outline" size={18} color="#ffffff" />
+                <Text style={styles.primaryButtonText}>Generate Payment Voucher</Text>
+              </View>
             </Pressable>
 
             <Text style={styles.infoText}>
-              ℹ️ Your balance will be deducted after voucher generation
+              Your balance will be deducted after voucher generation
             </Text>
           </View>
         )}
@@ -523,7 +532,7 @@ export default function UserPayScreen() {
             </View>
             
             <View style={styles.successBadge}>
-              <Text style={styles.successText}>✅ Payment voucher created successfully!</Text>
+              <Text style={styles.successText}>Payment voucher created successfully!</Text>
             </View>
 
             <View style={styles.qrContainer}>
@@ -547,13 +556,13 @@ export default function UserPayScreen() {
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Status:</Text>
                 <Text style={isOffline ? styles.statusOffline : styles.statusOnline}>
-                  {isOffline ? "📵 Offline (will sync)" : "🟢 Online"}
+                  {isOffline ? "Offline (will sync)" : "Online"}
                 </Text>
               </View>
             </View>
 
             <Text style={styles.instructionText}>
-              📱 Show this QR code to the merchant for verification
+              Show this QR code to the merchant for verification
             </Text>
             
             <Pressable
@@ -566,7 +575,10 @@ export default function UserPayScreen() {
                 loadBalance();
               }}
             >
-              <Text style={styles.doneButtonText}>✓ Complete Payment</Text>
+              <View style={styles.iconTextRow}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                <Text style={styles.doneButtonText}>Complete Payment</Text>
+              </View>
             </Pressable>
           </View>
         )}
@@ -719,6 +731,15 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     marginRight: 12,
   },
+  stepIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#6f63ff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
   stepTitle: {
     fontSize: 17,
     fontWeight: '800',
@@ -789,6 +810,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
+  },
+  iconTextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
   },
   errorContainer: {
     backgroundColor: '#fed7d7',

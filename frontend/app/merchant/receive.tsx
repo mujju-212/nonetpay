@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import * as Crypto from "expo-crypto";
 import pkg from "elliptic";
 import { API_BASE_URL } from "../../lib/api";
 import { notifyMerchantReceivedPayment } from "../../lib/notifications";
+import { Ionicons } from "@expo/vector-icons";
 const { ec: EC } = pkg;
 const ec = new EC("secp256k1");
 
@@ -222,7 +223,7 @@ export default function MerchantReceiveScreen() {
         {/* Header */}
         <View style={[styles.topBar, { paddingTop: insets.top + 16 }]}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backArrow}>‹</Text>
+            <Ionicons name="chevron-back" size={24} color="#1f2937" />
           </Pressable>
           <View style={styles.headerContent}>
             <Text style={styles.topBarTitle}>Receive Payment</Text>
@@ -275,7 +276,7 @@ export default function MerchantReceiveScreen() {
         {/* Footer info */}
         <View style={styles.footerInfo}>
           <Text style={styles.footerText}>
-            📋  {storedCount} voucher{storedCount !== 1 ? "s" : ""} stored  ·  Signatures verified offline
+            {storedCount} voucher{storedCount !== 1 ? "s" : ""} stored  ·  Signatures verified offline
           </Text>
         </View>
       </View>
@@ -290,11 +291,14 @@ export default function MerchantReceiveScreen() {
         <ScrollView contentContainerStyle={[styles.resultContent, { paddingTop: insets.top + 24 }]}>
 
           <Pressable style={styles.backBtnDark} onPress={() => router.back()}>
-            <Text style={styles.backBtnDarkText}>‹ Back</Text>
+            <View style={styles.inlineIconText}>
+              <Ionicons name="chevron-back" size={18} color="#1f2937" />
+              <Text style={styles.backBtnDarkText}>Back</Text>
+            </View>
           </Pressable>
 
           <View style={styles.successIcon}>
-            <Text style={styles.successEmoji}>✓</Text>
+            <Ionicons name="checkmark" size={38} color="#fff" />
           </View>
           <Text style={styles.successTitle}>Payment Received!</Text>
           <Text style={styles.successAmount}>₹{voucher.amount}</Text>
@@ -302,8 +306,8 @@ export default function MerchantReceiveScreen() {
             {syncing
               ? "Syncing to server..."
               : synced
-              ? "✓ Synced to server"
-              : "📱 Saved offline — sync later from History"}
+              ? "Synced to server"
+              : "Saved offline — sync later from History"}
           </Text>
 
           {/* Voucher detail card */}
@@ -332,7 +336,7 @@ export default function MerchantReceiveScreen() {
             <View style={styles.detailDivider} />
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Signature</Text>
-              <Text style={styles.detailValue}>✓ Verified</Text>
+              <Text style={styles.detailValue}>Verified</Text>
             </View>
             <View style={styles.detailDivider} />
             <View style={styles.detailRow}>
@@ -345,11 +349,17 @@ export default function MerchantReceiveScreen() {
 
           {/* Action buttons */}
           <Pressable style={styles.historyBtn} onPress={() => router.push("/merchant/history")}>
-            <Text style={styles.historyBtnText}>📋  View Transaction History</Text>
+            <View style={styles.inlineIconText}>
+              <Ionicons name="receipt-outline" size={18} color="#1f2937" />
+              <Text style={styles.historyBtnText}>View Transaction History</Text>
+            </View>
           </Pressable>
 
           <Pressable style={styles.scanAnotherBtn} onPress={resetToScan}>
-            <Text style={styles.scanAnotherText}>📷  Scan Another Voucher</Text>
+            <View style={styles.inlineIconText}>
+              <Ionicons name="scan-outline" size={18} color="#1f2937" />
+              <Text style={styles.scanAnotherText}>Scan Another Voucher</Text>
+            </View>
           </Pressable>
         </ScrollView>
       </View>
@@ -362,17 +372,23 @@ export default function MerchantReceiveScreen() {
       <StatusBar barStyle="dark-content" />
       <View style={[styles.resultContent, { paddingTop: insets.top + 24 }]}>
         <Pressable style={styles.backBtnDark} onPress={() => router.back()}>
-          <Text style={styles.backBtnDarkText}>‹ Back</Text>
+          <View style={styles.inlineIconText}>
+            <Ionicons name="chevron-back" size={18} color="#1f2937" />
+            <Text style={styles.backBtnDarkText}>Back</Text>
+          </View>
         </Pressable>
         <View style={styles.errorIconBox}>
-          <Text style={styles.errorEmoji}>✕</Text>
+          <Ionicons name="close" size={34} color="#ef4444" />
         </View>
         <Text style={styles.errorTitle}>Voucher Rejected</Text>
         <View style={styles.errorMsgCard}>
           <Text style={styles.errorMsgText}>{errorMsg}</Text>
         </View>
         <Pressable style={styles.retryBtn} onPress={resetToScan}>
-          <Text style={styles.retryBtnText}>📷  Try Again</Text>
+          <View style={styles.inlineIconText}>
+            <Ionicons name="refresh-outline" size={18} color="#1f2937" />
+            <Text style={styles.retryBtnText}>Try Again</Text>
+          </View>
         </Pressable>
       </View>
     </View>
@@ -419,6 +435,7 @@ const styles = StyleSheet.create({
   resultContent: { flexGrow: 1, padding: 24, alignItems: "center" },
   backBtnDark: { alignSelf: "flex-start", marginBottom: 24 },
   backBtnDarkText: { color: "#1f2937", fontSize: 16, fontWeight: "600" },
+  inlineIconText: { flexDirection: "row", alignItems: "center", gap: 6 },
 
   successIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: "#d1fae5", alignItems: "center", justifyContent: "center", marginBottom: 16 },
   successEmoji: { fontSize: 40, color: "#10b981", fontWeight: "800" },

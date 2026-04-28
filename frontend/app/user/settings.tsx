@@ -19,6 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -202,7 +203,7 @@ export default function UserSettingsScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={8}
           style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.6 }]}>
-          <Text style={styles.backArrow}>←</Text>
+          <Ionicons name="chevron-back" size={22} color="#1f2433" />
         </Pressable>
         <Text style={styles.title}>Settings</Text>
         <View style={{ width: 40 }} />
@@ -218,13 +219,16 @@ export default function UserSettingsScreen() {
             </View>
             <Text style={styles.avatarName}>{name || "User"}</Text>
             <View style={styles.avatarBadge}>
-              <Text style={styles.avatarBadgeText}>👤 Customer Account</Text>
+              <View style={styles.inlineIconText}>
+                <Ionicons name="person-circle-outline" size={14} color="#6f63ff" />
+                <Text style={styles.avatarBadgeText}>Customer Account</Text>
+              </View>
             </View>
           </LinearGradient>
         </View>
 
         {/* ══ SECTION: PROFILE ══════════════════════════════════════ */}
-        <SectionHeader label="ACCOUNT DETAILS" icon="👤" />
+        <SectionHeader label="ACCOUNT DETAILS" icon="person-circle-outline" />
         <View style={styles.card}>
 
           {/* Name */}
@@ -247,7 +251,10 @@ export default function UserSettingsScreen() {
             </View>
             {!editingName && (
               <Pressable style={styles.editPill} onPress={() => { setDraftName(name); setEditingName(true); }}>
-                <Text style={styles.editPillText}>✏️ Edit</Text>
+                <View style={styles.inlineIconText}>
+                  <Ionicons name="create-outline" size={12} color="#6f63ff" />
+                  <Text style={styles.editPillText}>Edit</Text>
+                </View>
               </Pressable>
             )}
           </View>
@@ -277,7 +284,12 @@ export default function UserSettingsScreen() {
               <Text style={styles.fieldLabel}>PHONE NUMBER</Text>
               <Text style={styles.fieldValue}>{phone || "—"}</Text>
             </View>
-            <View style={styles.lockBadge}><Text style={styles.lockText}>🔒 Fixed</Text></View>
+            <View style={styles.lockBadge}>
+              <View style={styles.inlineIconText}>
+                <Ionicons name="lock-closed-outline" size={12} color="#8b8fa6" />
+                <Text style={styles.lockText}>Fixed</Text>
+              </View>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -292,7 +304,7 @@ export default function UserSettingsScreen() {
         </View>
 
         {/* ══ SECTION: SECURITY ════════════════════════════════════= */}
-        <SectionHeader label="SECURITY" icon="🔐" />
+        <SectionHeader label="SECURITY" icon="shield-checkmark-outline" />
         <View style={styles.card}>
 
           {/* Change password toggle */}
@@ -306,14 +318,18 @@ export default function UserSettingsScreen() {
           >
             <View style={styles.actionLeft}>
               <View style={[styles.actionIcon, { backgroundColor: "#ede9fe" }]}>
-                <Text>🔑</Text>
+                <Ionicons name="key-outline" size={18} color="#6f63ff" />
               </View>
               <View>
                 <Text style={styles.actionTitle}>Change Password</Text>
                 <Text style={styles.actionSub}>Update your login password</Text>
               </View>
             </View>
-            <Text style={styles.chevron}>{showPasswordSection ? "▲" : "▼"}</Text>
+            <Ionicons
+              name={showPasswordSection ? "chevron-up" : "chevron-down"}
+              size={14}
+              color="#9ca3af"
+            />
           </Pressable>
 
           {showPasswordSection && (
@@ -358,22 +374,26 @@ export default function UserSettingsScreen() {
           <View style={styles.divider} />
 
           {/* Crypto info rows */}
-          <InfoRow icon="🛡️" label="Signature Scheme" value="ECDSA secp256k1" />
+          <InfoRow icon="shield-outline" label="Signature Scheme" value="ECDSA secp256k1" />
           <View style={styles.divider} />
-          <InfoRow icon="📱" label="Keys Stored" value="On-device only" />
+          <InfoRow icon="phone-portrait-outline" label="Keys Stored" value="On-device only" />
           <View style={styles.divider} />
-          <InfoRow icon="✅" label="Vouchers" value="Cryptographically signed" />
+          <InfoRow icon="checkmark-circle-outline" label="Vouchers" value="Cryptographically signed" />
         </View>
 
         {/* ══ SECTION: HELP & SUPPORT ══════════════════════════════== */}
-        <SectionHeader label="HELP & SUPPORT" icon="💬" />
+        <SectionHeader label="HELP & SUPPORT" icon="chatbubble-ellipses-outline" />
         <View style={styles.card}>
           {FAQ_ITEMS.map((item, i) => (
             <View key={i}>
               {i > 0 && <View style={styles.divider} />}
               <Pressable style={styles.faqQuestion} onPress={() => toggleFaq(i)}>
                 <Text style={styles.faqQ}>{item.q}</Text>
-                <Text style={styles.chevron}>{openFaq === i ? "▲" : "▼"}</Text>
+                <Ionicons
+                  name={openFaq === i ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color="#9ca3af"
+                />
               </Pressable>
               {openFaq === i && (
                 <Text style={styles.faqA}>{item.a}</Text>
@@ -383,11 +403,11 @@ export default function UserSettingsScreen() {
         </View>
 
         {/* ══ CONTACT CARD ═════════════════════════════════════════= */}
-        <SectionHeader label="CONTACT SUPPORT" icon="📧" />
+        <SectionHeader label="CONTACT SUPPORT" icon="mail-outline" />
         <View style={styles.contactCard}>
           <View style={styles.contactRow}>
             <View style={[styles.contactIcon, { backgroundColor: "#ede9fe" }]}>
-              <Text style={{ fontSize: 20 }}>👨‍💻</Text>
+              <Ionicons name="headset-outline" size={20} color="#6f63ff" />
             </View>
             <View style={styles.contactInfo}>
               <Text style={styles.contactName}>S Ashlesh</Text>
@@ -398,8 +418,10 @@ export default function UserSettingsScreen() {
             style={styles.emailBtn}
             onPress={() => Linking.openURL("mailto:ashleshskumar12@gmail.com?subject=Offline%20Pay%20Support")}
           >
-            <Text style={styles.emailBtnIcon}>✉️</Text>
-            <Text style={styles.emailBtnText}>ashleshskumar12@gmail.com</Text>
+            <View style={styles.inlineIconText}>
+              <Ionicons name="mail-outline" size={16} color="#5b52a1" />
+              <Text style={styles.emailBtnText}>ashleshskumar12@gmail.com</Text>
+            </View>
           </Pressable>
           <Text style={styles.supportNote}>
             Typically responds within 24 hours. Please include your User ID for faster assistance.
@@ -420,19 +442,19 @@ export default function UserSettingsScreen() {
 
 // ─── Helper components ────────────────────────────────────────────────────────
 
-function SectionHeader({ label, icon }: { label: string; icon: string }) {
+function SectionHeader({ label, icon }: { label: string; icon: any }) {
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionIcon}>{icon}</Text>
+      <Ionicons name={icon} size={14} color="#6f63ff" style={styles.sectionIcon} />
       <Text style={styles.sectionLabel}>{label}</Text>
     </View>
   );
 }
 
-function InfoRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+function InfoRow({ icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoIcon}>{icon}</Text>
+      <Ionicons name={icon} size={16} color="#6f63ff" style={styles.infoIcon} />
       <Text style={styles.infoLabel}>{label}</Text>
       <View style={styles.infoBadge}><Text style={styles.infoBadgeText}>{value}</Text></View>
     </View>
@@ -460,7 +482,7 @@ function PasswordInput({
           autoCorrect={false}
         />
         <Pressable onPress={onToggle} style={styles.eyeBtn}>
-          <Text style={styles.eyeText}>{show ? "🙈" : "👁️"}</Text>
+          <Ionicons name={show ? "eye-off-outline" : "eye-outline"} size={16} color="#6b7280" />
         </Pressable>
       </View>
     </View>
@@ -550,7 +572,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
   },
-  avatarBadgeText: { color: "#6f63ff", fontSize: 13, fontWeight: "700" },
+  avatarBadgeText: { color: "#6f63ff", fontSize: 12, fontWeight: "700" },
+  inlineIconText: { flexDirection: "row", alignItems: "center", gap: 6 },
 
   // Section header
   sectionHeader: {

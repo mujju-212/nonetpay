@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -207,7 +208,7 @@ export default function MerchantSettingsScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={8}
           style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.6 }]}>
-          <Text style={styles.backArrow}>←</Text>
+          <Ionicons name="chevron-back" size={22} color="#fff" />
         </Pressable>
         <Text style={styles.title}>Settings</Text>
         <View style={{ width: 40 }} />
@@ -223,13 +224,16 @@ export default function MerchantSettingsScreen() {
             </View>
             <Text style={styles.avatarName}>{shopName || name || "Merchant"}</Text>
             <View style={styles.avatarBadge}>
-              <Text style={styles.avatarBadgeText}>🏪 Merchant Account</Text>
+              <View style={styles.inlineIconText}>
+                <Ionicons name="storefront-outline" size={14} color="#fff" />
+                <Text style={styles.avatarBadgeText}>Merchant Account</Text>
+              </View>
             </View>
           </LinearGradient>
         </View>
 
         {/* ══ SECTION: PROFILE ═════════════════════════════════════ */}
-        <SectionHeader label="BUSINESS DETAILS" icon="🏪" />
+        <SectionHeader label="BUSINESS DETAILS" icon="storefront-outline" />
         <View style={styles.card}>
 
           {/* Owner Name */}
@@ -290,7 +294,12 @@ export default function MerchantSettingsScreen() {
               <Text style={styles.fieldLabel}>PHONE NUMBER</Text>
               <Text style={styles.fieldValue}>{phone || "—"}</Text>
             </View>
-            <View style={styles.lockBadge}><Text style={styles.lockText}>🔒 Fixed</Text></View>
+            <View style={styles.lockBadge}>
+              <View style={styles.inlineIconText}>
+                <Ionicons name="lock-closed-outline" size={12} color="#9ca3af" />
+                <Text style={styles.lockText}>Fixed</Text>
+              </View>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -305,7 +314,7 @@ export default function MerchantSettingsScreen() {
         </View>
 
         {/* ══ SECTION: SECURITY ════════════════════════════════════ */}
-        <SectionHeader label="SECURITY" icon="🔐" />
+        <SectionHeader label="SECURITY" icon="shield-checkmark-outline" />
         <View style={styles.card}>
           <Pressable
             style={styles.actionRow}
@@ -317,14 +326,18 @@ export default function MerchantSettingsScreen() {
           >
             <View style={styles.actionLeft}>
               <View style={[styles.actionIcon, { backgroundColor: "#d1fae5" }]}>
-                <Text>🔑</Text>
+                <Ionicons name="key-outline" size={18} color="#065f46" />
               </View>
               <View>
                 <Text style={styles.actionTitle}>Change Password</Text>
                 <Text style={styles.actionSub}>Update your login password</Text>
               </View>
             </View>
-            <Text style={styles.chevron}>{showPasswordSection ? "▲" : "▼"}</Text>
+            <Ionicons
+              name={showPasswordSection ? "chevron-up" : "chevron-down"}
+              size={14}
+              color="#9ca3af"
+            />
           </Pressable>
 
           {showPasswordSection && (
@@ -346,22 +359,26 @@ export default function MerchantSettingsScreen() {
           )}
 
           <View style={styles.divider} />
-          <InfoRow icon="✅" label="Voucher Verification" value="Auto on receive" />
+          <InfoRow icon="checkmark-circle-outline" label="Voucher Verification" value="Auto on receive" />
           <View style={styles.divider} />
-          <InfoRow icon="🛡️" label="Signature Scheme" value="ECDSA secp256k1" />
+          <InfoRow icon="shield-outline" label="Signature Scheme" value="ECDSA secp256k1" />
           <View style={styles.divider} />
-          <InfoRow icon="📡" label="Sync" value="Auto when online" />
+          <InfoRow icon="cloud-done-outline" label="Sync" value="Auto when online" />
         </View>
 
         {/* ══ SECTION: HELP & SUPPORT ═══════════════════════════════ */}
-        <SectionHeader label="HELP & SUPPORT" icon="💬" />
+        <SectionHeader label="HELP & SUPPORT" icon="chatbubble-ellipses-outline" />
         <View style={styles.card}>
           {FAQ_ITEMS.map((item, i) => (
             <View key={i}>
               {i > 0 && <View style={styles.divider} />}
               <Pressable style={styles.faqQuestion} onPress={() => toggleFaq(i)}>
                 <Text style={styles.faqQ}>{item.q}</Text>
-                <Text style={styles.chevron}>{openFaq === i ? "▲" : "▼"}</Text>
+                <Ionicons
+                  name={openFaq === i ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color="#9ca3af"
+                />
               </Pressable>
               {openFaq === i && <Text style={styles.faqA}>{item.a}</Text>}
             </View>
@@ -369,11 +386,11 @@ export default function MerchantSettingsScreen() {
         </View>
 
         {/* ══ CONTACT CARD ════════════════════════════════════════= */}
-        <SectionHeader label="CONTACT SUPPORT" icon="📧" />
+        <SectionHeader label="CONTACT SUPPORT" icon="mail-outline" />
         <View style={styles.contactCard}>
           <View style={styles.contactRow}>
             <View style={[styles.contactIcon, { backgroundColor: "#d1fae5" }]}>
-              <Text style={{ fontSize: 20 }}>👨‍💻</Text>
+              <Ionicons name="headset-outline" size={20} color="#065f46" />
             </View>
             <View style={styles.contactInfo}>
               <Text style={styles.contactName}>S Ashlesh</Text>
@@ -384,7 +401,7 @@ export default function MerchantSettingsScreen() {
             style={styles.emailBtn}
             onPress={() => Linking.openURL("mailto:ashleshskumar12@gmail.com?subject=Offline%20Pay%20Merchant%20Support")}
           >
-            <Text style={styles.emailBtnIcon}>✉️</Text>
+            <Ionicons name="mail-outline" size={16} color="#fff" />
             <Text style={styles.emailBtnText}>ashleshskumar12@gmail.com</Text>
           </Pressable>
           <Text style={styles.supportNote}>
@@ -406,19 +423,19 @@ export default function MerchantSettingsScreen() {
 
 // ─── Helper components ────────────────────────────────────────────────────────
 
-function SectionHeader({ label, icon }: { label: string; icon: string }) {
+function SectionHeader({ label, icon }: { label: string; icon: any }) {
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionIcon}>{icon}</Text>
+      <Ionicons name={icon} size={14} color="rgba(255,255,255,0.75)" style={styles.sectionIcon} />
       <Text style={styles.sectionLabel}>{label}</Text>
     </View>
   );
 }
 
-function InfoRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+function InfoRow({ icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoIcon}>{icon}</Text>
+      <Ionicons name={icon} size={16} color="#10b981" style={styles.infoIcon} />
       <Text style={styles.infoLabel}>{label}</Text>
       <View style={styles.infoBadge}><Text style={styles.infoBadgeText}>{value}</Text></View>
     </View>
@@ -450,7 +467,10 @@ function EditableField({
       </View>
       {!isEditing && (
         <Pressable style={styles.editPill} onPress={onEdit}>
-          <Text style={styles.editPillText}>✏️ Edit</Text>
+          <View style={styles.inlineIconText}>
+            <Ionicons name="create-outline" size={12} color="#059669" />
+            <Text style={styles.editPillText}>Edit</Text>
+          </View>
         </Pressable>
       )}
     </View>
@@ -478,7 +498,7 @@ function PasswordInput({
           autoCorrect={false}
         />
         <Pressable onPress={onToggle} style={styles.eyeBtn}>
-          <Text style={styles.eyeText}>{show ? "🙈" : "👁️"}</Text>
+          <Ionicons name={show ? "eye-off-outline" : "eye-outline"} size={16} color="#6b7280" />
         </Pressable>
       </View>
     </View>
@@ -518,6 +538,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5, borderRadius: 20,
   },
   avatarBadgeText: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  inlineIconText: { flexDirection: "row", alignItems: "center", gap: 6 },
 
   sectionHeader: {
     flexDirection: "row", alignItems: "center",
