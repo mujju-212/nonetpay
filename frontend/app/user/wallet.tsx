@@ -223,7 +223,7 @@ export default function UserWalletScreen() {
       setError(null);
 
       // Open Razorpay checkout in browser — balance auto-updated on return
-      const result = await initiateTopUp(token, amt, (newBal) => {
+      const result = await initiateTopUp(token, amt, balance ?? 0, (newBal) => {
         setBalance(newBal);
         saveLocalBalance(newBal).catch(() => {});
       });
@@ -234,6 +234,7 @@ export default function UserWalletScreen() {
       );
 
       if (result.success) {
+        await loadBalance();
         await loadRecentTxns();
       }
     } catch {

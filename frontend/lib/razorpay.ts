@@ -1,6 +1,7 @@
 import { API_BASE_URL, STORAGE_KEYS } from "./api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Razorpay Payment Helper
@@ -33,7 +34,8 @@ export type PaymentResult = {
  */
 export async function createTopUpOrder(
   token: string,
-  amount: number
+  amount: number,
+  returnUrl: string
 ): Promise<CreateOrderResult> {
   try {
     const resp = await fetch(`${API_BASE_URL}/api/payment/create-order`, {
@@ -42,7 +44,7 @@ export async function createTopUpOrder(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ amount, returnUrl }),
     });
     const data = await resp.json();
     if (!resp.ok) return { success: false, error: data.error || "Order creation failed" };
@@ -63,12 +65,19 @@ export async function createTopUpOrder(
  */
 export async function openRazorpayCheckout(checkoutUrl: string): Promise<PaymentResult> {
   try {
-    const result = await WebBrowser.openBrowserAsync(checkoutUrl, {
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
-      toolbarColor: "#0f0f23",
-      controlsColor: "#6c63ff",
-    });
-    return { opened: true };
+    const returnUrl = Linking.createURL("payment-callback");
+    const result = await WebBrowser.openAuthSessionAsync(checkoutUrl, returnUrl);
+    if (result.type !== "success" || !result.url) {
+      return { opened: true, error: "Payment cancelled" };
+    }
+    const parsed = Linking.parse(result.url);
+    const status = typeof parsed.queryParams?.status === "string" ? parsed.queryParams.status : "";
+    const balanceRaw = parsed.queryParams?.balance;
+    const newBalance = typeof balanceRaw === "string" ? Number(balanceRaw) : undefined;
+    if (status !== "success") {
+      return { opened: true, error: "Payment cancelled" };
+    }
+    return { opened: true, newBalance: Number.isFinite(newBalance) ? newBalance : undefined };
   } catch (error: any) {
     return { opened: false, error: error.message };
   }
@@ -108,28 +117,47 @@ export async function fetchBalanceAfterPayment(token: string): Promise<number | 
 export async function initiateTopUp(
   token: string,
   amount: number,
+  previousBalance: number,
   onBalanceUpdate?: (balance: number) => void
 ): Promise<{ success: boolean; message: string }> {
 
+  const returnUrl = Linking.createURL("payment-callback");
   // 1. Create order
-  const orderResult = await createTopUpOrder(token, amount);
+  const orderResult = await createTopUpOrder(token, amount, returnUrl);
   if (!orderResult.success || !orderResult.checkoutUrl) {
     return { success: false, message: orderResult.error || "Failed to create order" };
   }
 
-  // 2. Open browser checkout
-  await openRazorpayCheckout(orderResult.checkoutUrl);
+  // 2. Open in-app checkout session
+  const checkout = await openRazorpayCheckout(orderResult.checkoutUrl);
+  if (checkout.error === "Payment cancelled") {
+    return { success: false, message: "Payment cancelled" };
+  }
 
-  // 3. Fetch updated balance (payment verified in browser)
-  const newBalance = await fetchBalanceAfterPayment(token);
+  // 3. Read fresh balance with retries (verification can complete slightly later)
+  let newBalance = checkout.newBalance ?? null;
+  if (newBalance === null || newBalance === undefined) {
+    for (let i = 0; i < 6; i++) {
+      const latest = await fetchBalanceAfterPayment(token);
+      if (latest !== null && latest >= previousBalance + amount) {
+        newBalance = latest;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    }
+  }
+  if (newBalance === null || newBalance === undefined) {
+    newBalance = await fetchBalanceAfterPayment(token);
+  }
+
   if (newBalance !== null && onBalanceUpdate) {
     onBalanceUpdate(newBalance);
   }
 
   return {
-    success: true,
+    success: newBalance !== null,
     message: newBalance !== null
       ? `₹${amount} added! New balance: ₹${newBalance}`
-      : "Payment done! Refresh to see updated balance.",
+      : "Payment is being verified. Pull to refresh in a few seconds.",
   };
 }
