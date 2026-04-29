@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+﻿import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 // expo-notifications remote push is removed from Expo Go in SDK 53+.
@@ -41,7 +41,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
   // Android 8+ requires a notification channel
   if (Platform.OS === 'android') {
     await N.setNotificationChannelAsync('offline-pay', {
-      name: 'Offline Pay Alerts',
+      name: 'NONETPAY Alerts',
       importance: N.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#16a34a',
