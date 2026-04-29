@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -196,7 +196,7 @@ export default function TransactionDetailModal({
               <View style={styles.noteCard}>
                 <Text style={styles.noteTitle}>Security</Text>
                 <Text style={styles.noteText}>
-                  Offline Pay uses signed vouchers with ECDSA secp256k1. Receipts reflect the current sync status of this transaction.
+                  NONETPAY uses signed vouchers with ECDSA secp256k1. Receipts reflect the current sync status of this transaction.
                 </Text>
               </View>
 
