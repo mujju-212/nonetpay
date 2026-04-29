@@ -6,6 +6,19 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
+function getBackendBase(req) {
+	const configured = (process.env.BACKEND_HOST || "").trim();
+	if (configured) {
+		return configured.replace(/\/+$/, "");
+	}
+
+	const forwardedProto = (req.headers["x-forwarded-proto"] || "").toString().split(",")[0].trim();
+	const forwardedHost = (req.headers["x-forwarded-host"] || "").toString().split(",")[0].trim();
+	const host = forwardedHost || req.get("host") || "localhost:5000";
+	const proto = forwardedProto || (req.secure ? "https" : "http");
+	return `${proto}://${host}`;
+}
+
 // ── Razorpay instance ──────────────────────────────────────────────────────────
 const razorpay = new Razorpay({
 	key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_REPLACE_ME",
@@ -38,8 +51,8 @@ router.post("/payment/create-order", authMiddleware, async (req, res) => {
 			},
 		});
 
-		// Build the checkout URL — BACKEND_HOST must be full URL (e.g. https://xxx.trycloudflare.com)
-		const backendBase = process.env.BACKEND_HOST || "https://explore-criterion-logging-floppy.trycloudflare.com";
+		// Build checkout URL from BACKEND_HOST, or infer from incoming request in deployed envs.
+		const backendBase = getBackendBase(req);
 		const safeReturnUrl =
 			typeof returnUrl === "string" && returnUrl.trim().length > 0
 				? encodeURIComponent(returnUrl.trim())
@@ -66,7 +79,7 @@ router.post("/payment/create-order", authMiddleware, async (req, res) => {
 router.get("/payment/checkout/:orderId", (req, res) => {
 	const { orderId } = req.params;
 	const { keyId, amount, userId, name, returnUrl } = req.query;
-	const backendBase = process.env.BACKEND_HOST || "https://explore-criterion-logging-floppy.trycloudflare.com";
+	const backendBase = getBackendBase(req);
 
 	res.send(`<!DOCTYPE html>
 <html>
