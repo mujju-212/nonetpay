@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { getDB } from "../db/index.js";
@@ -46,7 +46,7 @@ router.post("/payment/create-order", authMiddleware, async (req, res) => {
 			amount: order.amount,
 			currency: order.currency,
 			keyId: process.env.RAZORPAY_KEY_ID,
-			checkoutUrl: `${backendBase}/api/payment/checkout/${order.id}?keyId=${process.env.RAZORPAY_KEY_ID}&amount=${order.amount}&userId=${req.user.userId}&name=${encodeURIComponent("Offline Pay Wallet")}`,
+			checkoutUrl: `${backendBase}/api/payment/checkout/${order.id}?keyId=${process.env.RAZORPAY_KEY_ID}&amount=${order.amount}&userId=${req.user.userId}&name=${encodeURIComponent("NONETPAY Wallet")}`,
 		});
 	} catch (error) {
 		console.error("Create order error:", error);
@@ -69,7 +69,7 @@ router.get("/payment/checkout/:orderId", (req, res) => {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Offline Pay – Add Money</title>
+  <title>NONETPAY – Add Money</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,sans-serif;background:#0f0f23;color:#fff;
@@ -92,7 +92,7 @@ router.get("/payment/checkout/:orderId", (req, res) => {
 <body>
   <div class="card">
     <div class="logo">💳</div>
-    <h1>Offline Pay</h1>
+    <h1>NONETPAY</h1>
     <div class="sub">Add money to your wallet</div>
     <div class="amount">₹${Math.round(Number(amount) / 100)}</div>
     <button class="btn" id="payBtn" onclick="openPayment()">Pay with Razorpay</button>
@@ -109,7 +109,7 @@ router.get("/payment/checkout/:orderId", (req, res) => {
         key: '${keyId}',
         amount: ${amount},
         currency: 'INR',
-        name: 'Offline Pay',
+        name: 'NONETPAY',
         description: 'Wallet Top-up',
         order_id: '${orderId}',
         handler: function(response) {

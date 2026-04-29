@@ -16,6 +16,13 @@ const SUPPORT_SUGGESTIONS = [
   "What should I do next?",
 ];
 
+const MERCHANT_SUPPORT_SUGGESTIONS = [
+  "Any failed vouchers today?",
+  "How many payments are pending sync?",
+  "Show this week's received amount",
+  "What should I do next?",
+];
+
 const CATEGORY_PATTERNS = [
   { key: "food", label: "Food", patterns: ["canteen", "grocery", "restaurant", "food", "cafe", "tea", "snack", "mess", "kitchen"] },
   { key: "office", label: "Office", patterns: ["xerox", "print", "stationery", "office", "copy", "books", "notebook"] },
@@ -413,28 +420,237 @@ function buildAnalyticsFallbackNarrative(analytics) {
   return `You spent Rs ${analytics.totalSpentWeek} this week, ${trendText}. ${categoryText}${pendingText}`;
 }
 
+function buildMerchantTransactions(serverVouchers) {
+  const transactions = (serverVouchers || []).map((voucher) => ({
+    id: voucher.voucherId,
+    type: "credit",
+    category: "payment_received",
+    amount: normalizeAmount(voucher.amount),
+    description: `Payment from ${sanitizeText(voucher.payerName) || sanitizeText(voucher.payerId) || "Customer"}`,
+    payerId: voucher.payerId || null,
+    payerName: sanitizeText(voucher.payerName) || sanitizeText(voucher.payerId) || "Customer",
+    merchantId: voucher.merchantId,
+    timestamp: voucher.createdAt || voucher.syncedAt || new Date().toISOString(),
+    status: voucher.status || "synced",
+    voucherId: voucher.voucherId,
+  }));
+  transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return transactions;
+}
+
+function findRelevantMerchantTransaction(message, transactions) {
+  const text = sanitizeText(message).toLowerCase();
+  const amountMatch = text.match(/(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?)/i);
+  const amount = amountMatch ? Number(amountMatch[1]) : null;
+  const words = text
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length >= 3);
+
+  for (const transaction of transactions) {
+    const haystack = `${transaction.payerName || ""} ${transaction.payerId || ""} ${transaction.voucherId || ""}`.toLowerCase();
+    const wordMatched = words.length === 0 ? false : words.some((word) => haystack.includes(word));
+    const amountMatched = amount === null || Math.abs(normalizeAmount(transaction.amount) - amount) < 0.01;
+    if (wordMatched && amountMatched) return transaction;
+  }
+
+  if (amount !== null) {
+    return transactions.find((transaction) => Math.abs(normalizeAmount(transaction.amount) - amount) < 0.01) || null;
+  }
+
+  return null;
+}
+
+function buildMerchantSupportFallback(message, transactions) {
+  const text = sanitizeText(message).toLowerCase();
+  const relevant = findRelevantMerchantTransaction(message, transactions);
+  const pending = transactions.filter((transaction) => transaction.status === "pending");
+  const failed = transactions.filter((transaction) => transaction.status === "failed");
+  const pendingAmount = pending.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+  const failedAmount = failed.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+  const weekStart = startOfWeek(new Date());
+  const thisWeek = transactions.filter((transaction) => new Date(transaction.timestamp) >= weekStart);
+  const receivedWeek = thisWeek.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+
+  if (relevant && relevant.status === "failed") {
+    return {
+      reply:
+        `Voucher ${relevant.voucherId || relevant.id} for Rs ${relevant.amount} from ${relevant.payerName} failed verification. ` +
+        `Reason: ${describeFailureReason(relevant.failureReason || "")}. Check voucher details and ask customer to regenerate if needed.`,
+      matchedTransaction: {
+        voucherId: relevant.voucherId || relevant.id,
+        amount: normalizeAmount(relevant.amount),
+        merchantName: relevant.payerName || "Customer",
+        status: String(relevant.status || "failed"),
+        failureReason: relevant.failureReason,
+      },
+    };
+  }
+
+  if (text.includes("pending") || text.includes("sync")) {
+    return {
+      reply:
+        pending.length > 0
+          ? `You have ${pending.length} pending voucher${pending.length === 1 ? "" : "s"} worth Rs ${pendingAmount}. Open History and tap Sync Now while online.`
+          : "No pending vouchers right now. Your merchant payments are synced.",
+      matchedTransaction: null,
+    };
+  }
+
+  if (text.includes("failed") || text.includes("rejected")) {
+    return {
+      reply:
+        failed.length > 0
+          ? `You have ${failed.length} failed voucher${failed.length === 1 ? "" : "s"} worth Rs ${failedAmount}. Open History and check failure reason before retry.`
+          : "No failed vouchers found in recent merchant transactions.",
+      matchedTransaction: null,
+    };
+  }
+
+  if (text.includes("week") || text.includes("today") || text.includes("received") || text.includes("sales")) {
+    return {
+      reply:
+        `This week you received Rs ${receivedWeek} across ${thisWeek.length} payment${thisWeek.length === 1 ? "" : "s"}. ` +
+        `Pending: ${pending.length}, Failed: ${failed.length}.`,
+      matchedTransaction: null,
+    };
+  }
+
+  if (text.includes("what can") || text.includes("help") || text.includes("do")) {
+    return {
+      reply:
+        "I can help with failed vouchers, pending sync, received amount summary, and voucher status lookup by amount or payer name.",
+      matchedTransaction: null,
+    };
+  }
+
+  if (relevant) {
+    return {
+      reply:
+        `I found voucher ${relevant.voucherId || relevant.id} for Rs ${normalizeAmount(relevant.amount)} from ${relevant.payerName}. ` +
+        `Current status: ${relevant.status || "synced"}.`,
+      matchedTransaction: {
+        voucherId: relevant.voucherId || relevant.id,
+        amount: normalizeAmount(relevant.amount),
+        merchantName: relevant.payerName || "Customer",
+        status: String(relevant.status || "synced"),
+        failureReason: relevant.failureReason,
+      },
+    };
+  }
+
+  return {
+    reply:
+      "I can help with merchant voucher failures, pending sync, and received amount summary. " +
+      "Ask with amount, payer name, or voucher ID for exact details.",
+    matchedTransaction: null,
+  };
+}
+
+function buildMerchantInsights(transactions) {
+  const weekStart = startOfWeek(new Date());
+  const lastWeekStart = new Date(weekStart);
+  lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+
+  const thisWeek = transactions.filter((transaction) => new Date(transaction.timestamp) >= weekStart);
+  const lastWeek = transactions.filter((transaction) => {
+    const ts = new Date(transaction.timestamp);
+    return ts >= lastWeekStart && ts < weekStart;
+  });
+
+  const totalReceivedWeek = thisWeek.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+  const totalReceivedLastWeek = lastWeek.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+  const weekChangePct =
+    totalReceivedLastWeek > 0
+      ? Number((((totalReceivedWeek - totalReceivedLastWeek) / totalReceivedLastWeek) * 100).toFixed(1))
+      : totalReceivedWeek > 0
+      ? 100
+      : 0;
+
+  const pending = thisWeek.filter((transaction) => transaction.status === "pending");
+  const failed = thisWeek.filter((transaction) => transaction.status === "failed");
+  const pendingAmount = pending.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+  const failedAmount = failed.reduce((sum, transaction) => sum + normalizeAmount(transaction.amount), 0);
+
+  const payerMap = new Map();
+  for (const transaction of thisWeek) {
+    const key = transaction.payerName || transaction.payerId || "Customer";
+    const current = payerMap.get(key) || { name: key, amount: 0, count: 0 };
+    current.amount += normalizeAmount(transaction.amount);
+    current.count += 1;
+    payerMap.set(key, current);
+  }
+  const topPayer = Array.from(payerMap.values()).sort((a, b) => b.amount - a.amount)[0] || null;
+
+  const statusMap = new Map();
+  for (const transaction of thisWeek) {
+    const key = String(transaction.status || "synced");
+    const current = statusMap.get(key) || { key, label: key.toUpperCase(), count: 0, amount: 0, share: 0 };
+    current.count += 1;
+    current.amount += normalizeAmount(transaction.amount);
+    statusMap.set(key, current);
+  }
+  const statusBreakdown = Array.from(statusMap.values())
+    .sort((a, b) => b.amount - a.amount)
+    .map((item) => ({
+      ...item,
+      share: totalReceivedWeek > 0 ? Number(((item.amount / totalReceivedWeek) * 100).toFixed(1)) : 0,
+    }));
+
+  const actionTip =
+    failed.length > 0
+      ? "Review failed vouchers first and ask customers to regenerate invalid vouchers."
+      : pending.length > 0
+      ? "Keep internet on and sync pending vouchers to settle merchant balance faster."
+      : "Merchant sync is healthy. Keep checking history at closing time for clean settlement.";
+
+  return {
+    totalReceivedWeek,
+    totalReceivedLastWeek,
+    weekChangePct,
+    totalTransactionsWeek: thisWeek.length,
+    pendingCount: pending.length,
+    pendingAmount,
+    failedCount: failed.length,
+    failedAmount,
+    topPayer,
+    statusBreakdown,
+    actionTip,
+  };
+}
+
+function buildMerchantInsightsFallbackNarrative(analytics) {
+  const trendText =
+    analytics.weekChangePct > 0
+      ? `up ${analytics.weekChangePct}% from last week`
+      : analytics.weekChangePct < 0
+      ? `down ${Math.abs(analytics.weekChangePct)}% from last week`
+      : "the same as last week";
+
+  return (
+    `You received Rs ${analytics.totalReceivedWeek} this week, ${trendText}. ` +
+    `Processed ${analytics.totalTransactionsWeek} merchant payment${analytics.totalTransactionsWeek === 1 ? "" : "s"}. ` +
+    `Pending ${analytics.pendingCount}, failed ${analytics.failedCount}.`
+  );
+}
+
 async function generateHuggingFaceText(prompt) {
   if (!HF_API_KEY) {
     throw new Error("Missing Hugging Face API key");
   }
 
-  const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
+  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${HF_API_KEY}`,
     },
     body: JSON.stringify({
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: 280,
-        temperature: 0.4,
-        top_p: 0.9,
-        return_full_text: false,
-      },
-      options: {
-        wait_for_model: true,
-      },
+      model: HF_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+      top_p: 0.9,
+      max_tokens: 300,
     }),
   });
 
@@ -444,14 +660,8 @@ async function generateHuggingFaceText(prompt) {
   }
 
   const data = await response.json();
-  if (Array.isArray(data) && data[0]?.generated_text) {
-    const text = String(data[0].generated_text).trim();
-    if (text) return text;
-  }
-
-  if (typeof data?.generated_text === "string" && data.generated_text.trim()) {
-    return data.generated_text.trim();
-  }
+  const text = data?.choices?.[0]?.message?.content?.trim();
+  if (text) return text;
 
   throw new Error("Hugging Face returned an empty response");
 }
@@ -493,7 +703,14 @@ async function generateGeminiText(prompt) {
 
 async function generateLlmText(prompt) {
   if (HF_API_KEY) {
-    return generateHuggingFaceText(prompt);
+    try {
+      return await generateHuggingFaceText(prompt);
+    } catch (hfError) {
+      if (GEMINI_API_KEY) {
+        return generateGeminiText(prompt);
+      }
+      throw hfError;
+    }
   }
 
   if (GEMINI_API_KEY) {
@@ -542,7 +759,7 @@ router.post("/ai/support", authMiddleware, async (req, res) => {
       }));
 
       const prompt =
-        "You are the Offline Pay in-app support assistant. " +
+        "You are the NONETPAY in-app support assistant. " +
         "Answer in 3 short sentences max, be specific, calm, and actionable. " +
         "Never invent data outside the provided context.\n\n" +
         `User name: ${user.name || "Customer"}\n` +
@@ -598,7 +815,7 @@ router.post("/ai/insights", authMiddleware, async (req, res) => {
 
     try {
       const prompt =
-        "You are a fintech spending coach for the Offline Pay app. " +
+        "You are a fintech spending coach for the NONETPAY app. " +
         "Write exactly 3 concise lines. " +
         "Line 1: weekly summary. " +
         "Line 2: top category and biggest payment. " +
@@ -633,6 +850,127 @@ router.post("/ai/insights", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("AI insights error:", error);
     return res.status(500).json({ error: "Failed to generate insights" });
+  }
+});
+
+router.post("/ai/merchant/support", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== "merchant" || !req.user.merchantId) {
+      return res.status(403).json({ error: "Merchant access required" });
+    }
+
+    const message = sanitizeText(req.body?.message);
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const db = getDB();
+    const merchant = await db.collection("merchants").findOne({ merchantId: req.user.merchantId });
+    if (!merchant) {
+      return res.status(404).json({ error: "Merchant not found" });
+    }
+
+    const serverVouchers = await db
+      .collection("vouchers")
+      .find({ merchantId: merchant.merchantId })
+      .sort({ createdAt: -1 })
+      .limit(120)
+      .toArray();
+
+    const transactions = buildMerchantTransactions(serverVouchers);
+    const fallback = buildMerchantSupportFallback(message, transactions);
+
+    let reply = fallback.reply;
+    let usedAi = false;
+
+    try {
+      const recentTransactions = transactions.slice(0, 12).map((transaction) => ({
+        amount: transaction.amount,
+        payerName: transaction.payerName,
+        timestamp: transaction.timestamp,
+        status: transaction.status || "synced",
+        voucherId: transaction.voucherId || transaction.id,
+      }));
+
+      const prompt =
+        "You are the NONETPAY merchant support assistant. " +
+        "Answer in 3 short sentences max, specific and actionable. " +
+        "Never invent data outside provided context.\n\n" +
+        `Merchant name: ${merchant.businessName || merchant.merchantId}\n` +
+        `Recent received vouchers: ${JSON.stringify(recentTransactions)}\n` +
+        `Fallback answer: ${fallback.reply}\n` +
+        `Merchant question: ${message}\n\n` +
+        "Respond with plain text only.";
+
+      reply = await generateLlmText(prompt);
+      usedAi = true;
+    } catch (error) {
+      console.log("AI merchant support fallback:", error.message);
+    }
+
+    return res.json({
+      success: true,
+      reply,
+      suggestions: MERCHANT_SUPPORT_SUGGESTIONS,
+      usedAi,
+      matchedTransaction: fallback.matchedTransaction || null,
+    });
+  } catch (error) {
+    console.error("AI merchant support error:", error);
+    return res.status(500).json({ error: "Failed to generate merchant support response" });
+  }
+});
+
+router.post("/ai/merchant/insights", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== "merchant" || !req.user.merchantId) {
+      return res.status(403).json({ error: "Merchant access required" });
+    }
+
+    const db = getDB();
+    const merchant = await db.collection("merchants").findOne({ merchantId: req.user.merchantId });
+    if (!merchant) {
+      return res.status(404).json({ error: "Merchant not found" });
+    }
+
+    const serverVouchers = await db
+      .collection("vouchers")
+      .find({ merchantId: merchant.merchantId })
+      .sort({ createdAt: -1 })
+      .limit(300)
+      .toArray();
+
+    const transactions = buildMerchantTransactions(serverVouchers);
+    const analytics = buildMerchantInsights(transactions);
+
+    let narrative = buildMerchantInsightsFallbackNarrative(analytics);
+    let usedAi = false;
+
+    try {
+      const prompt =
+        "You are a merchant operations coach for NONETPAY. " +
+        "Write exactly 3 concise lines: weekly received summary, sync/failure health, one action tip. " +
+        "Use plain text only.\n\n" +
+        `Merchant: ${merchant.businessName || merchant.merchantId}\n` +
+        `Analytics: ${JSON.stringify(analytics)}\n`;
+
+      narrative = await generateLlmText(prompt);
+      usedAi = true;
+    } catch (error) {
+      console.log("AI merchant insights fallback:", error.message);
+    }
+
+    return res.json({
+      success: true,
+      analytics: {
+        ...analytics,
+        narrative,
+      },
+      usedAi,
+    });
+  } catch (error) {
+    console.error("AI merchant insights error:", error);
+    return res.status(500).json({ error: "Failed to generate merchant insights" });
   }
 });
 

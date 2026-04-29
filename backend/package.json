@@ -1,7 +1,7 @@
 {
 	"name": "offline-pay-backend",
 	"version": "1.0.0",
-	"description": "Backend API for Offline Payment System",
+	"description": "Backend API for NONETPAY System",
 	"main": "index.js",
 	"type": "module",
 	"engines": {

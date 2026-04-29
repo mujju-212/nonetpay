@@ -1,1 +1,24 @@
-null
+services:
+  - type: web
+    name: nonetpay-backend
+    env: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: MONGODB_URI
+        sync: false          # Set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false          # Set manually in Render dashboard
+      - key: RAZORPAY_KEY_ID
+        sync: false          # Set manually in Render dashboard
+      - key: RAZORPAY_KEY_SECRET
+        sync: false          # Set manually in Render dashboard
+      - key: BACKEND_HOST
+        sync: false          # Set to your Render URL e.g. https://nonetpay-backend.onrender.com

@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import { getDB } from "../db/index.js";
 import { buildDashboardHTML } from "../utils/dashboard.js";
 
@@ -52,7 +52,7 @@ router.get("/api/health", async (req, res) => {
 		await db.admin().ping();
 		return res.json({
 			status: "healthy",
-			message: "Offline Pay Backend API",
+			message: "NONETPAY Backend API",
 			database: "connected",
 			uptime: Math.floor(process.uptime()),
 			timestamp: new Date().toISOString(),
@@ -65,7 +65,7 @@ router.get("/api/health", async (req, res) => {
 		console.error("Health check failed:", error);
 		return res.status(503).json({
 			status: "unhealthy",
-			message: "Offline Pay Backend API",
+			message: "NONETPAY Backend API",
 			database: "disconnected",
 			uptime: Math.floor(process.uptime()),
 			timestamp: new Date().toISOString(),
@@ -76,7 +76,7 @@ router.get("/api/health", async (req, res) => {
 
 router.get("/api/status", (req, res) => {
 	return res.json({
-		api: "Offline Pay Backend",
+		api: "NONETPAY Backend",
 		version: "1.0.0",
 		status: "online",
 		timestamp: new Date().toISOString(),

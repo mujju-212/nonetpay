@@ -1,4 +1,4 @@
-export function buildDashboardHTML(stats = {}, vouchers = []) {
+﻿export function buildDashboardHTML(stats = {}, vouchers = []) {
 	const safeStats = {
 		totalVouchers: stats.totalVouchers || 0,
 		syncedCount: stats.syncedCount || 0,
@@ -28,7 +28,7 @@ export function buildDashboardHTML(stats = {}, vouchers = []) {
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Offline Pay Backend Dashboard</title>
+	<title>NONETPAY Backend Dashboard</title>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
@@ -47,7 +47,7 @@ export function buildDashboardHTML(stats = {}, vouchers = []) {
 <body>
 	<div class="container">
 		<div class="header">
-			<h1>Offline Pay Backend</h1>
+			<h1>NONETPAY Backend</h1>
 			<div class="muted">Last updated: ${safeStats.lastUpdated}</div>
 		</div>
 
