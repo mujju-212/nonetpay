@@ -1,9 +1,11 @@
 // ─── App-wide constants ───────────────────────────────────────────────────────
 // Single source of truth — import from here instead of hardcoding values.
 
-// Backend URL — update BACKEND_HOST in backend/.env when tunnel changes
-// For production: point to the live Render URL
-export const API_BASE_URL = "https://explore-criterion-logging-floppy.trycloudflare.com";
+// Backend URL — production Render deployment
+// Landing page:  https://nonetpay.onrender.com/
+// API base:      https://nonetpay.onrender.com/api/...
+// Admin panel:   https://nonetpay.onrender.com/admin
+export const API_BASE_URL = "https://nonetpay.onrender.com";
 
 // ─── Payment limits ───────────────────────────────────────────────────────────
 /** Maximum amount per single top-up transaction (₹) */

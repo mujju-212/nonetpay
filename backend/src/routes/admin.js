@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import { getDB } from "../db/index.js";
 import { buildDashboardHTML } from "../utils/dashboard.js";
 
@@ -93,7 +93,7 @@ router.get("/api/status", (req, res) => {
 	});
 });
 
-router.get("/", async (req, res) => {
+router.get("/admin", async (req, res) => {
 	try {
 		const db = getDB();
 		const vouchers = await db.collection("vouchers").find().toArray();

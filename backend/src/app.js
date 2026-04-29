@@ -41,6 +41,14 @@ export async function registerRoutes() {
 	const adminRoutes = adminModule.default || createEmptyRouter();
 	const aiRoutes = aiModule.default || createEmptyRouter();
 
+	// ── Landing page & static assets (registered FIRST — owns GET /) ──
+	const publicDir = path.join(__dirname, "../public");
+	app.use(express.static(publicDir));
+	app.get("/", (_req, res) => {
+		res.sendFile(path.join(publicDir, "index.html"));
+	});
+
+	// ── API routes ────────────────────────────────────────────────────
 	app.use("/api", authRoutes);
 	app.use("/api", balanceRoutes);
 	app.use("/api", vouchersRoutes);
@@ -48,16 +56,9 @@ export async function registerRoutes() {
 	app.use("/api", transactionsRoutes);
 	app.use("/api", paymentsRoutes);
 	app.use("/api", aiRoutes);
+
+	// ── Admin dashboard at /admin ─────────────────────────────────────
 	app.use("/", adminRoutes);
-
-	// ── Landing page & static assets ──────────────────────────────
-	const publicDir = path.join(__dirname, "../../public");
-	app.use(express.static(publicDir));
-
-	// Root → serve landing page
-	app.get("/", (_req, res) => {
-		res.sendFile(path.join(publicDir, "index.html"));
-	});
 
 	app.use(errorHandler);
 }

@@ -6,8 +6,12 @@
     "orientation": "portrait",
     "scheme": "offlinepay",
     "userInterfaceStyle": "automatic",
-    "icon": "./assets/images/icon.png",
-    "platforms": ["ios", "android", "web"],
+    "icon": "./assets/images/nnplogo.png",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -30,7 +34,7 @@
       "package": "com.ashlesh.offlinepay",
       "versionCode": 2,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/nnplogo.png",
         "backgroundColor": "#1e3a8a"
       },
       "permissions": [
@@ -39,7 +43,16 @@
         "VIBRATE",
         "POST_NOTIFICATIONS",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
       ]
     },
     "plugins": [
@@ -62,7 +75,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/android-icon-foreground.png",
+          "icon": "./assets/images/nnplogo.png",
           "color": "#16a34a",
           "defaultChannel": "offline-pay"
         }
@@ -74,9 +87,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "011c1998-23a4-4110-8332-7785c719ff27"
+        "projectId": "04815925-e5d8-4003-b2ee-7b5fcbd00892"
       }
     },
-    "owner": "ashleshs"
+    "owner": "mujju-212"
   }
 }

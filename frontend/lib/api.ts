@@ -4,12 +4,11 @@ import {
   notifyVoucherSynced,
 } from "./notifications";
 
-// ✅ LOCAL backend via Cloudflare Tunnel — works from phone on any network
-export const API_BASE_URL = "https://explore-criterion-logging-floppy.trycloudflare.com";
+// ✅ Production backend (Render)
+export const API_BASE_URL = "https://nonetpay.onrender.com";
 export const BASE_URL = API_BASE_URL;
 
-// 🔧 To get a new tunnel: run .\cloudflared.exe tunnel --url http://localhost:4000
-// 🔧 Fallback: https://offline-pay-backend-sau2.onrender.com
+// 🔧 For local dev, replace with your tunnel or localhost URL
 
 
 
