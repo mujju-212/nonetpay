@@ -1,4 +1,4 @@
-# 💳 Offline Pay — Secure Offline Digital Payment System
+﻿# 💳 NONETPAY — Secure Offline Digital Payment System
 
 > A full-stack mobile payment prototype enabling **secure peer-to-merchant transactions without internet connectivity** using cryptographically signed QR vouchers.
 
@@ -22,7 +22,7 @@
 
 ## Overview
 
-**Offline Pay** is an offline-first fintech prototype that demonstrates how digital payments can be made securely in environments with **limited or no internet connectivity**.
+**NONETPAY** is an offline-first fintech prototype that demonstrates how digital payments can be made securely in environments with **limited or no internet connectivity**.
 
 Users load money online, store their wallet balance locally, and generate **ECDSA-signed QR vouchers** to pay merchants — all without needing an active connection. When internet is restored, all transactions automatically sync with the backend.
 
@@ -430,4 +430,4 @@ Real-world deployment would additionally require:
 
 ## Author
 
-**Offline Pay** — Built as a learning-focused fintech prototype demonstrating offline-first architecture, distributed transaction handling, and cryptographic payment security on mobile.
+**NONETPAY** — Built as a learning-focused fintech prototype demonstrating offline-first architecture, distributed transaction handling, and cryptographic payment security on mobile.
