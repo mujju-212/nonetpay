@@ -1,183 +1,263 @@
-import React from "react";
+﻿import React from "react";
 import { View, Text, Pressable, StyleSheet, SafeAreaView, StatusBar } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function RoleSelectScreen() {
   return (
     <SafeAreaView style={styles.root}>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={['#6d7ef6', '#6b62d8', '#6b57c9']}
-        style={styles.container}
-      >
+      <StatusBar barStyle="dark-content" />
+      <LinearGradient colors={["#f7f3ff", "#f9f7ff", "#f3f1ff"]} style={styles.background} />
+      <View style={styles.glowTop} />
+      <View style={styles.glowRight} />
+      <View style={styles.glowBottom} />
+
+      <View style={styles.container}>
         <View style={styles.headerSection}>
-          <Text style={styles.logoIcon}>💳</Text>
-          <Text style={styles.title}>Offline Pay</Text>
-          <Text style={styles.subtitle}>Secure • Fast • Offline Payments</Text>
+          <View style={styles.brandIconWrap}>
+            <Ionicons name="wallet-outline" size={26} color="#6f63ff" />
+          </View>
+          <Text style={styles.title}>NONETPAY</Text>
+          <Text style={styles.subtitle}>Choose your role to continue securely</Text>
           <View style={styles.featureRow}>
-            <View style={styles.featurePill}><Text style={styles.featureText}>🔒 Encrypted</Text></View>
-            <View style={styles.featurePill}><Text style={styles.featureText}>⚡ Instant</Text></View>
-            <View style={styles.featurePill}><Text style={styles.featureText}>📱 Mobile</Text></View>
+            <Pill text="Encrypted" />
+            <Pill text="Instant" />
+            <Pill text="Offline Ready" />
           </View>
         </View>
 
         <View style={styles.cardsSection}>
-          <Pressable
-            style={[styles.card, styles.userCard]}
-            onPress={() => router.push('/login')}
-          >
+          <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={() => router.push("/login")}>
             <View style={[styles.cardIconWrap, styles.userIconWrap]}>
-              <Text style={styles.cardIcon}>👤</Text>
+              <Ionicons name="person-outline" size={20} color="#2f9a5e" />
             </View>
-            <Text style={styles.cardTitle}>Customer Login</Text>
-            <Text style={styles.cardSubtitle}>Pay merchants & manage wallet</Text>
+            <View style={styles.cardBody}>
+              <Text style={styles.cardTitle}>Continue as User</Text>
+              <Text style={styles.cardSubtitle}>Pay merchants, view history, and manage wallet</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8b8fa6" />
           </Pressable>
 
           <Pressable
-            style={[styles.card, styles.merchantCard]}
-            onPress={() => router.push('/merchant-login')}
+            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            onPress={() => router.push("/merchant-login")}
           >
             <View style={[styles.cardIconWrap, styles.merchantIconWrap]}>
-              <Text style={styles.cardIcon}>🏪</Text>
+              <Ionicons name="storefront-outline" size={20} color="#d97706" />
             </View>
-            <Text style={styles.cardTitle}>Merchant Login</Text>
-            <Text style={styles.cardSubtitle}>Accept payments & view sales</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.signupRow}
-            onPress={() => router.push('/register')}
-          >
-            <Text style={styles.signupText}>New user? Create account</Text>
-            <Text style={styles.signupArrow}>→</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.testButton}
-            onPress={() => router.push('/test-connection')}
-          >
-            <Text style={styles.testText}>🔧 Connection Test</Text>
+            <View style={styles.cardBody}>
+              <Text style={styles.cardTitle}>Continue as Merchant</Text>
+              <Text style={styles.cardSubtitle}>Accept offline payments and track sales</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8b8fa6" />
           </Pressable>
         </View>
-      </LinearGradient>
+
+        <View style={styles.footerSection}>
+          <Pressable style={styles.linkRow} onPress={() => router.push("/register")}>
+            <Text style={styles.linkLabel}>New user? Create account</Text>
+            <Ionicons name="arrow-forward" size={15} color="#6f63ff" />
+          </Pressable>
+
+          <Pressable style={styles.linkRow} onPress={() => router.push("/merchant-register")}>
+            <Text style={styles.linkLabel}>New merchant? Register shop</Text>
+            <Ionicons name="arrow-forward" size={15} color="#6f63ff" />
+          </Pressable>
+
+          <Pressable style={styles.testButton} onPress={() => router.push("/test-connection")}>
+            <Ionicons name="build-outline" size={14} color="#6357d9" />
+            <Text style={styles.testText}>Connection Test</Text>
+          </Pressable>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
 
+function Pill({ text }: { text: string }) {
+  return (
+    <View style={styles.featurePill}>
+      <Text style={styles.featureText}>{text}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#6d7ef6' },
+  root: { flex: 1, backgroundColor: "#f7f3ff" },
+  background: { ...StyleSheet.absoluteFillObject },
+  glowTop: {
+    position: "absolute",
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: "#efe9ff",
+    top: -170,
+    left: -100,
+    opacity: 0.9,
+  },
+  glowRight: {
+    position: "absolute",
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: "#f3eaff",
+    top: 120,
+    right: -120,
+    opacity: 0.7,
+  },
+  glowBottom: {
+    position: "absolute",
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: "#f0f7ff",
+    bottom: -160,
+    left: -80,
+    opacity: 0.7,
+  },
   container: {
     flex: 1,
-    paddingTop: 30,
-    paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 22,
   },
   headerSection: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
+    marginTop: 8,
+    alignItems: "center",
   },
-  logoIcon: { fontSize: 32, marginBottom: 10 },
-  title: { 
-    fontSize: 34,
+  brandIconWrap: {
+    width: 58,
+    height: 58,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.94)",
+    shadowColor: "#b8aef0",
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  title: {
+    marginTop: 12,
+    fontSize: 30,
     fontWeight: "800",
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 6,
+    color: "#1f2433",
   },
   subtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.85)',
-    textAlign: 'center',
-    marginBottom: 14,
+    marginTop: 6,
+    fontSize: 13,
+    color: "#70758b",
+    fontWeight: "600",
   },
   featureRow: {
-    flexDirection: 'row',
-    gap: 10,
+    marginTop: 14,
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
   featurePill: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: "rgba(255,255,255,0.9)",
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#e7e2ff",
   },
-  featureText: { fontSize: 12, color: '#ffffff', fontWeight: '600' },
+  featureText: {
+    fontSize: 11,
+    color: "#6357d9",
+    fontWeight: "700",
+  },
   cardsSection: {
-    flex: 1.2,
-    justifyContent: 'flex-start',
-    width: '100%',
-    gap: 14,
+    marginTop: 26,
+    gap: 12,
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    alignItems: 'center',
-    shadowColor: '#3f3b8c',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 16,
-    elevation: 8,
+    backgroundColor: "rgba(255,255,255,0.96)",
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+    borderColor: "#ede9fe",
+    shadowColor: "#c6bff3",
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  userCard: { borderLeftWidth: 4, borderLeftColor: '#52c27a' },
-  merchantCard: { borderLeftWidth: 4, borderLeftColor: '#f6b04a' },
+  cardPressed: {
+    opacity: 0.82,
+  },
   cardIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
   },
-  userIconWrap: { backgroundColor: '#e7f7ee' },
-  merchantIconWrap: { backgroundColor: '#fff2df' },
-  cardIcon: { fontSize: 22 },
+  userIconWrap: {
+    backgroundColor: "#e9f9ef",
+  },
+  merchantIconWrap: {
+    backgroundColor: "#fff3e3",
+  },
+  cardBody: {
+    flex: 1,
+    paddingRight: 8,
+  },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#1f2433',
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#1f2433",
   },
   cardSubtitle: {
+    marginTop: 3,
     fontSize: 12,
-    color: '#7c7f95',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#7a8096",
   },
-  signupRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
+  footerSection: {
+    marginTop: "auto",
+    gap: 8,
+    paddingTop: 18,
+  },
+  linkRow: {
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderWidth: 1,
+    borderColor: "#ebe7ff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
   },
-  signupText: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  signupArrow: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: 'bold',
+  linkLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#4f46a5",
   },
   testButton: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    alignItems: 'center',
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#efe9ff",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
+    borderColor: "#ddd6fe",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
     marginTop: 4,
   },
   testText: {
     fontSize: 12,
-    color: '#ffffff',
-    fontWeight: '600',
+    color: "#6357d9",
+    fontWeight: "700",
   },
 });

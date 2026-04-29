@@ -91,7 +91,7 @@ export default function RegisterScreen() {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join the offline payment system</Text>
+            <Text style={styles.subtitle}>Join NONETPAY</Text>
           </View>
 
           <View style={styles.card}>
